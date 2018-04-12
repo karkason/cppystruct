@@ -25,19 +25,24 @@ struct FormatMode
 {
 	static_assert(isFormatMode(FormatChar), "Invalid Format Mode passed");
 
-	static constexpr bool isBigEndian = false;
-	static constexpr bool shouldPad = false;
+	static constexpr bool isBigEndian() { return false; };
+	static constexpr bool shouldPad() { return false; };
 };
 
-template <>
-constexpr bool FormatMode<'@'>::shouldPad = true;
+#define SET_FORMAT_MODE(mode, padding, bigEndian) \
+    template <> struct FormatMode<mode> { \
+		static constexpr bool isBigEndian() { return bigEndian; }; \
+		static constexpr bool shouldPad() { return padding; }; \
+	}
 
-template <>
-constexpr bool FormatMode<'>'>::isBigEndian = true;
+SET_FORMAT_MODE('@', true, false);
+SET_FORMAT_MODE('>', false, true);
+SET_FORMAT_MODE('!', false, true);
 
-template <>
-constexpr bool FormatMode<'!'>::isBigEndian = true;
-
+constexpr bool doesFormatAlign(size_t size) 
+{
+	return size > 1;
+}
 
 template <char FormatChar>
 struct BigEndianFormat
