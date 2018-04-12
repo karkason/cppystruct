@@ -28,6 +28,7 @@ constexpr size_t calcsize(Fmt&&)
 {
 	return internal::calcsize(Fmt{}, std::make_index_sequence<Fmt::size()>());
 }
+
 template <typename Fmt, size_t... Indices>
 constexpr size_t internal::calcsize(Fmt&&, std::index_sequence<Indices...>)
 {
