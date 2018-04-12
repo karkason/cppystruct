@@ -23,19 +23,8 @@ ExternalProject_Add(
 ExternalProject_Get_Property(catch source_dir)
 set(CATCH_INCLUDE_DIR ${source_dir}/single_include CACHE INTERNAL "Path to include folder for Catch")
 
-option(WERROR "Add -Werror flag to build (turns warnings into errors)" ON)
-
-# configure optimization
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(OPTIMIZATION_FLAGS "-O0 -DDEBUG")
-    message("-- Configuring debug build")
-else()
-    set(OPTIMIZATION_FLAGS "-O3 -DNDEBUG")
-    message("-- Configuring release build")
-endif()
 
 # Enable extra warnings to adhere to https://github.com/mapbox/cpp/issues/37
-set(DESIRED_WARNINGS "-Wall -Wextra -Wconversion -Wunreachable-code -Wuninitialized -pedantic-errors -Wold-style-cast -Wno-error=unused-variable -Wshadow -Wfloat-equal -Weffc++")
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   set(DESIRED_WARNINGS "${DESIRED_WARNINGS} -Wmost")
 endif()
@@ -44,13 +33,10 @@ endif()
 # Currently we only depend on a header only library, but this will help avoid issues when more libs are added via mason
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPTIMIZATION_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0 ${DESIRED_WARNINGS}")
 
-if (WERROR)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
-endif()
 
 add_library(Catch INTERFACE)
 target_include_directories(Catch INTERFACE ${CATCH_INCLUDE_DIR})
-
+include_directories("${CATCH_INCLUDE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 file(GLOB TEST_SOURCES test/*.cpp)
