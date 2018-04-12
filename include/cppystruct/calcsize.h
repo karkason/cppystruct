@@ -11,32 +11,32 @@ static constexpr size_t DEFAULT_ALIGNMENT = 4;
 
 // Interface
 template <typename Fmt>
-constexpr size_t calcsize(Fmt&& fmt);
+constexpr size_t calcsize(Fmt&&);
 
 
 namespace internal {
 
 template <typename Fmt, size_t... Indices>
-constexpr size_t calcsize(Fmt&& fmt, std::index_sequence<Indices...>);
+constexpr size_t calcsize(Fmt&&, std::index_sequence<Indices...>);
 
 } // namespace internal
 
 
 // Implementation
 template <typename Fmt>
-constexpr size_t calcsize(Fmt&& fmt) 
+constexpr size_t calcsize(Fmt&&) 
 {
-	return internal::calcsize(std::forward<Fmt>(fmt), std::make_index_sequence<fmt.size()>());
+	return internal::calcsize(Fmt{}, std::make_index_sequence<Fmt::size()>());
 }
 template <typename Fmt, size_t... Indices>
-constexpr size_t internal::calcsize(Fmt&& fmt, std::index_sequence<Indices...>)
+constexpr size_t internal::calcsize(Fmt&&, std::index_sequence<Indices...>)
 {
-	constexpr size_t sizes[] = { BigEndianFormat<fmt.value()[Indices]>::size()... };
+	constexpr size_t sizes[] = { BigEndianFormat<Fmt::value()[Indices]>::size()... };
 	
 	bool shouldPad = true;
 	// First format char is a format mode
-	if constexpr(isFormatMode(fmt.value()[0])) {
-		constexpr auto firstChar = fmt.value()[0];
+	if constexpr(isFormatMode(Fmt::value()[0])) {
+		constexpr auto firstChar = Fmt::value()[0];
 		shouldPad = FormatMode<firstChar>::shouldPad();
 	}
 
@@ -44,7 +44,7 @@ constexpr size_t internal::calcsize(Fmt&& fmt, std::index_sequence<Indices...>)
 	size_t size = 0;
 	size_t multiplier = 1;
 	for(size_t i = 0; i < std::size(sizes); i++) {
-		auto currentChar = fmt.value()[i];
+		auto currentChar = Fmt::value()[i];
 		auto currentSize = sizes[i];
 
 		if(i == 0 && isFormatMode(currentChar)) {
