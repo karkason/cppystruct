@@ -1,10 +1,27 @@
 cmake_minimum_required(VERSION 3.8)
-project(hpp_skel LANGUAGES CXX)
+project(cppystruct LANGUAGES CXX)
+include(ExternalProject)
+find_package(Git REQUIRED)
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/mason.cmake)
+ExternalProject_Add(
+    catch
+    PREFIX ${CMAKE_BINARY_DIR}/catch
+    GIT_REPOSITORY https://github.com/philsquared/Catch.git
+    TIMEOUT 10
+    UPDATE_COMMAND ${GIT_EXECUTABLE} pull
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+    LOG_DOWNLOAD ON
+   )
+
+# Expose required variable (CATCH_INCLUDE_DIR) to parent scope
+ExternalProject_Get_Property(catch source_dir)
+set(CATCH_INCLUDE_DIR ${source_dir}/single_include CACHE INTERNAL "Path to include folder for Catch")
 
 option(WERROR "Add -Werror flag to build (turns warnings into errors)" ON)
 
@@ -31,22 +48,10 @@ if (WERROR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 endif()
 
-# mason_use is a mason function within the mason.cmake file and provides ready-to-go vars, like "STATIC_LIBS" and "INCLUDE_DIRS"
-mason_use(catch VERSION 1.9.6 HEADER_ONLY)
-include_directories(SYSTEM ${MASON_PACKAGE_catch_INCLUDE_DIRS})
-
-mason_use(benchmark VERSION 1.2.0)
-include_directories(SYSTEM ${MASON_PACKAGE_benchmark_INCLUDE_DIRS})
+add_library(Catch INTERFACE)
+target_include_directories(Catch INTERFACE ${CATCH_INCLUDE_DIR})
 
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 file(GLOB TEST_SOURCES test/*.cpp)
 add_executable(unit-tests ${TEST_SOURCES})
-
-# libbenchmark.a supports threads and therefore needs pthread support
-find_package(Threads REQUIRED)
-file(GLOB BENCH_SOURCES bench/*.cpp)
-add_executable(bench-tests ${BENCH_SOURCES})
-
-# link benchmark static library to the bench-tests binary so the bench tests know where to find the benchmark impl code
-target_link_libraries(bench-tests ${MASON_PACKAGE_benchmark_STATIC_LIBS} ${CMAKE_THREAD_LIBS_INIT})
