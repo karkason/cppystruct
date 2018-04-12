@@ -3,8 +3,15 @@
 
 namespace pystruct {
 namespace internal {
-	struct format_string {
-	};
+	
+struct format_string {
+};
+
+constexpr bool isDigit(char ch)
+{
+	return ch >= '0' && ch <= '9';
+}
+
 } // namespace internal
 } // namespace pystruct
 

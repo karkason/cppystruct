@@ -1,51 +1,55 @@
 #pragma once
+#include <cppystruct/string.h>
+
 namespace pystruct {
 
-	constexpr bool isFormatMode(char formatChar)
-	{
-		return formatChar == '<' || formatChar == '>' || formatChar == '!'
-				   				 || formatChar == '=' || formatChar == '@';
-	}
+constexpr bool isFormatMode(char formatChar)
+{
+	return formatChar == '<' || formatChar == '>' || formatChar == '!'
+			   				 || formatChar == '=' || formatChar == '@';
+}
 
-	constexpr bool isFormatChar(char formatChar)
-	{
-		return isFormatMode(formatChar) || formatChar == 'x' || formatChar == 'b'
-			|| formatChar == 'B' || formatChar == 'c' || formatChar == 's'
-			|| formatChar == 'h' || formatChar == 'H' || formatChar == 'i'
-			|| formatChar == 'I' || formatChar == 'l' || formatChar == 'L'
-			|| formatChar == 'q' || formatChar == 'Q' || formatChar == 'f'
-			|| formatChar == 'd';
-	}
+constexpr bool isFormatChar(char formatChar)
+{
+	return isFormatMode(formatChar) || formatChar == 'x' || formatChar == 'b'
+		|| formatChar == 'B' || formatChar == 'c' || formatChar == 's'
+		|| formatChar == 'h' || formatChar == 'H' || formatChar == 'i'
+		|| formatChar == 'I' || formatChar == 'l' || formatChar == 'L'
+		|| formatChar == 'q' || formatChar == 'Q' || formatChar == 'f'
+		|| formatChar == 'd' 
+		|| internal::isDigit(formatChar);
+}
 
-	template <char FormatChar>
-	struct FormatMode
-	{
-		static_assert(isFormatMode(FormatChar), "Invalid Format Mode passed");
+template <char FormatChar>
+struct FormatMode
+{
+	static_assert(isFormatMode(FormatChar), "Invalid Format Mode passed");
 
-		static constexpr bool isBigEndian = false;
-		static constexpr bool shouldPad = false;
-	};
+	static constexpr bool isBigEndian = false;
+	static constexpr bool shouldPad = false;
+};
 
-	template <>
-	constexpr bool FormatMode<'@'>::shouldPad = true;
+template <>
+constexpr bool FormatMode<'@'>::shouldPad = true;
 
-	template <>
-	constexpr bool FormatMode<'>'>::isBigEndian = true;
+template <>
+constexpr bool FormatMode<'>'>::isBigEndian = true;
 
-	template <>
-	constexpr bool FormatMode<'!'>::isBigEndian = true;
+template <>
+constexpr bool FormatMode<'!'>::isBigEndian = true;
 
 
-	template <char FormatChar>
-	struct BigEndianFormat
-	{
-		static_assert(isFormatChar(FormatChar), "Invalid Format Char passed");
-		static const size_t size;
-	};
+template <char FormatChar>
+struct BigEndianFormat
+{
+	static_assert(isFormatChar(FormatChar), "Invalid Format Char passed");
+	static constexpr size_t size() { return 0; }
+};
 
 #define SET_FORMAT_CHAR(ch, s) \
-    template <> \
-	constexpr size_t BigEndianFormat<ch>::size = s;
+    template <> struct BigEndianFormat<ch> { \
+		static constexpr size_t size() { return s; } \
+	}
 
 SET_FORMAT_CHAR('x', 1);
 SET_FORMAT_CHAR('b', 1);
