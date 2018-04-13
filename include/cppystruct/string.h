@@ -1,5 +1,6 @@
 #pragma once
 #include <iterator>
+#include <utility>
 
 namespace pystruct {
 namespace internal {

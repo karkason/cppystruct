@@ -62,13 +62,13 @@ constexpr int16_t endianswap(int16_t x)
 		| ((x >> 8) & 0xff);
 }
 
-constexpr float endianswap(float x)
+float endianswap(float x)
 {
 	auto mem = endianswap(*reinterpret_cast<uint32_t*>(&x));
 	return *reinterpret_cast<float*>(&mem);
 }
 
-constexpr double endianswap(double x)
+double endianswap(double x)
 {
 	auto mem = endianswap(*reinterpret_cast<uint64_t*>(&x));
 	return *reinterpret_cast<double*>(&mem);

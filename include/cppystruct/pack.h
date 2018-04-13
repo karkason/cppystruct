@@ -42,7 +42,7 @@ constexpr auto internal::pack(Fmt&&, std::index_sequence<Items...>, Args&&... ar
 	using ArrayType = std::array<char, pystruct::calcsize(Fmt{})>;
 	ArrayType output{};
 
-	using Types = std::tuple< pystruct::BigEndianFormat<pystruct::getTypeOfItem<Items>(Fmt{})>::RepresentedType ...>;
+	using Types = std::tuple<typename pystruct::BigEndianFormat<pystruct::getTypeOfItem<Items>(Fmt{})>::RepresentedType ...>;
 	Types t = std::forward_as_tuple(swapBytesIfBigEndian(std::forward<Args>(args), formatMode.isBigEndian())...);
 
 	constexpr size_t offsets[] = { getBinaryOffset<Items>(Fmt{})... };
