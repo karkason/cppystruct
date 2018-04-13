@@ -22,6 +22,7 @@ struct.unpack("c2h",'*\x00\x13\x12\x15\x14')
 
 
 ### Limitations
-- float & double are not constexpr due to no constexpr reinterpret-cast. 
+- float & double are not constexpr due to no constexpr reinterpret-cast
+- A macro is used for the compile-time string because the UDL version is a gcc extension 
 - Tests are not as comprehensive as desired
 - Compile time diagnostics are not beautiful
