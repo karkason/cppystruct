@@ -26,17 +26,15 @@ constexpr auto pack(Fmt&&, Args&&... args)
 template <typename Fmt, size_t... Indices, typename... Args>
 constexpr auto internal::pack(Fmt&&, std::index_sequence<Indices...>, Args&&... args)
 {
+	constexpr size_t expectedItemCount = pystruct::countItems(Fmt{});
+	static_assert(sizeof...(args) == expectedItemCount, "pack expected items for packing != sizeof...(args) passed");
+
 	using ArrayType = std::array<char, pystruct::calcsize(Fmt{})>;
 	ArrayType output;
 
-	bool shouldPad = true;
-	// First format char is a format mode
-	if constexpr(isFormatMode(Fmt::value()[0])) {
-		constexpr auto firstChar = Fmt::value()[0];
-		shouldPad = FormatMode<firstChar>::shouldPad();
-	}
+	constexpr auto formatMode = pystruct::getFormatMode(Fmt{});
+	pystruct::getTypeOfItem<0>(Fmt{});
 
-	
 	return output;
 }
 

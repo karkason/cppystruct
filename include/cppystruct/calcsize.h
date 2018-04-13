@@ -32,20 +32,14 @@ constexpr size_t calcsize(Fmt&&)
 template <typename Fmt, size_t... Indices>
 constexpr size_t internal::calcsize(Fmt&&, std::index_sequence<Indices...>)
 {
-	constexpr size_t sizes[] = { BigEndianFormat<Fmt::value()[Indices]>::size()... };
-	
-	bool shouldPad = true;
-	// First format char is a format mode
-	if constexpr(isFormatMode(Fmt::value()[0])) {
-		constexpr auto firstChar = Fmt::value()[0];
-		shouldPad = FormatMode<firstChar>::shouldPad();
-	}
+	constexpr size_t sizes[] = { BigEndianFormat<Fmt::at(Indices)>::size()... };
+	constexpr auto formatMode = pystruct::getFormatMode(Fmt{});
 
 	// Calculate the size, the multiplier is the count before each format char 
 	size_t size = 0;
 	size_t multiplier = 1;
-	for(size_t i = 0; i < std::size(sizes); i++) {
-		auto currentChar = Fmt::value()[i];
+	for(size_t i = 0; i < Fmt::size(); i++) {
+		auto currentChar = Fmt::at(i);
 		auto currentSize = sizes[i];
 
 		if(i == 0 && isFormatMode(currentChar)) {
@@ -64,7 +58,7 @@ constexpr size_t internal::calcsize(Fmt&&, std::index_sequence<Indices...>)
 
 		// Handle padding
 		auto nextSize = currentSize * multiplier;
-		if (shouldPad) {
+		if (formatMode.shouldPad()) {
 			size_t currentAlignement = ((size + nextSize) % currentSize);
 			if(doesFormatAlign(currentSize) && currentAlignement != 0) {
 				size += currentSize - currentAlignement;
