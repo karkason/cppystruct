@@ -3,7 +3,7 @@
 #include <catch.hpp>
 
 #define REQUIRE_STATIC(x) REQUIRE(x); \
-						  //static_assert(x, #x);
+						  static_assert(x, #x);
 
 TEST_CASE("Item count without format-count", "[cppystruct::format]")
 {
@@ -45,6 +45,15 @@ TEST_CASE("getTypeOfItem without item count", "[cppystruct::format]")
 	REQUIRE_STATIC(pystruct::getTypeOfItem<2>(PY_STRING("cih")) == 'h');
 }
 
+TEST_CASE("getTypeOfItem with format specifier", "[cppystruct::format]")
+{
+	REQUIRE_STATIC(pystruct::getTypeOfItem<0>(PY_STRING("cih")) == 'c');
+	REQUIRE_STATIC(pystruct::getTypeOfItem<0>(PY_STRING("@cih")) == 'c');
+	REQUIRE_STATIC(pystruct::getTypeOfItem<0>(PY_STRING(">cih")) == 'c');
+	REQUIRE_STATIC(pystruct::getTypeOfItem<0>(PY_STRING("<cih")) == 'c');
+}
+
+
 TEST_CASE("getTypeOfItem with item count", "[cppystruct::format]")
 {
 	REQUIRE_STATIC(pystruct::getTypeOfItem<0>(PY_STRING("L2ci")) == 'L');
@@ -53,3 +62,16 @@ TEST_CASE("getTypeOfItem with item count", "[cppystruct::format]")
 	REQUIRE_STATIC(pystruct::getTypeOfItem<3>(PY_STRING("L2ci")) == 'i');
 }
 
+TEST_CASE("getBinaryOffset with item count", "[cppystruct::format]")
+{
+	REQUIRE_STATIC(pystruct::getBinaryOffset<0>(PY_STRING("L2ci")) == 0);
+	REQUIRE_STATIC(pystruct::getBinaryOffset<1>(PY_STRING("L2ci")) == 4);
+	REQUIRE_STATIC(pystruct::getBinaryOffset<2>(PY_STRING("L2ci")) == 5);
+	REQUIRE_STATIC(pystruct::getBinaryOffset<3>(PY_STRING("L2ci")) == 8);
+
+	REQUIRE_STATIC(pystruct::getBinaryOffset<0>(PY_STRING("<L2ci")) == 0);
+	REQUIRE_STATIC(pystruct::getBinaryOffset<1>(PY_STRING("<L2ci")) == 4);
+	REQUIRE_STATIC(pystruct::getBinaryOffset<2>(PY_STRING("<L2ci")) == 5);
+	REQUIRE_STATIC(pystruct::getBinaryOffset<3>(PY_STRING("<L2ci")) == 6);
+
+}

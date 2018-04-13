@@ -1,7 +1,9 @@
 #pragma once
 #include <cppystruct/string.h>
-#include <iostream>
+
 namespace pystruct {
+
+static constexpr size_t DEFAULT_ALIGNMENT = 4; 
 
 constexpr bool isFormatMode(char formatChar)
 {
@@ -37,7 +39,7 @@ struct FormatMode
 		static constexpr bool shouldPad() { return padding; }; \
 	}
 
-SET_FORMAT_MODE('@', true, false);
+SET_FORMAT_MODE('@', true, true);
 SET_FORMAT_MODE('>', false, true);
 SET_FORMAT_MODE('!', false, true);
 
@@ -126,6 +128,9 @@ template <size_t Item, typename Fmt, size_t CurrentItem=0, size_t CurrentI=0, si
 constexpr char getTypeOfItem(std::index_sequence<Is...>)
 {
 	constexpr char chars[] = { Fmt::at(Is)... };
+	if constexpr(CurrentI == 0 && isFormatMode(Fmt::at(0))) {
+		return getTypeOfItem<Item, Fmt, CurrentItem, CurrentI+1>(std::index_sequence<Is...>{});
+	}
 
 	if constexpr (internal::isDigit(Fmt::at(CurrentI))) {
 		constexpr auto numberAndIndex = internal::consumeNumber(chars, CurrentI);
@@ -140,11 +145,42 @@ constexpr char getTypeOfItem(std::index_sequence<Is...>)
 	}
 }
 
-template <size_t Index, typename Fmt>
-constexpr auto getTypeOfItem(Fmt&&)
+template <size_t Item, typename Fmt>
+constexpr char getTypeOfItem(Fmt&&)
 {
-	return getTypeOfItem<Index, Fmt>(std::make_index_sequence<Fmt::size()>());
+	return getTypeOfItem<Item, Fmt>(std::make_index_sequence<Fmt::size()>());
 }
+
+template <typename Fmt, size_t... Items>
+constexpr size_t getBinaryOffset(Fmt&&, std::index_sequence<Items...>)
+{
+	constexpr char itemTypes[] = { getTypeOfItem<Items>(Fmt{})... };
+	constexpr size_t itemSizes[] = { BigEndianFormat<itemTypes[Items]>::size()... };
+	constexpr auto formatMode = pystruct::getFormatMode(Fmt{});
+
+	size_t size = 0;
+	for(size_t i = 0; i < sizeof...(Items) - 1; i++) {
+		size += itemSizes[i];
+
+		if (formatMode.shouldPad()) {
+			if (doesFormatAlign(itemSizes[i+1])) {
+				auto currentAlignment = (size % DEFAULT_ALIGNMENT);
+				if (currentAlignment != 0) {
+					size += DEFAULT_ALIGNMENT - currentAlignment;
+				}
+			}
+		}	
+	}
+
+	return size;
+}
+
+template <size_t Item, typename Fmt>
+constexpr size_t getBinaryOffset(Fmt&&)
+{
+	return getBinaryOffset(Fmt{}, std::make_index_sequence<Item+1>());
+}
+
 
 
 } // namespace pystruct

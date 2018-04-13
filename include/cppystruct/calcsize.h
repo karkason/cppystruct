@@ -7,8 +7,6 @@
 
 namespace pystruct {
 
-static constexpr size_t DEFAULT_ALIGNMENT = 4; 
-
 // Interface
 template <typename Fmt>
 constexpr size_t calcsize(Fmt&&);
