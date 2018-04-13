@@ -128,18 +128,23 @@ template <size_t Item, typename Fmt, size_t CurrentItem=0, size_t CurrentI=0, si
 constexpr char getTypeOfItem(std::index_sequence<Is...>)
 {
 	constexpr char chars[] = { Fmt::at(Is)... };
+
 	if constexpr(CurrentI == 0 && isFormatMode(Fmt::at(0))) {
 		return getTypeOfItem<Item, Fmt, CurrentItem, CurrentI+1>(std::index_sequence<Is...>{});
 	}
 
-	if constexpr (internal::isDigit(Fmt::at(CurrentI))) {
+	if constexpr (CurrentI < Fmt::size() && internal::isDigit(Fmt::at(CurrentI))) {
 		constexpr auto numberAndIndex = internal::consumeNumber(chars, CurrentI);
 		return getTypeOfItem<Item, Fmt, CurrentItem, numberAndIndex.second, numberAndIndex.first>(std::index_sequence<Is...>{});
 	}
 
 	if constexpr ((Item >= CurrentItem) && (Item < (CurrentItem + Multiplier))) {
-		constexpr char currentChar = Fmt::at(CurrentI);
-		return currentChar;
+		if constexpr(CurrentI < Fmt::size()) {
+			constexpr char currentChar = Fmt::at(CurrentI);
+			return currentChar;
+		} else {
+			return 0;
+		}
 	} else {
 		return getTypeOfItem<Item, Fmt, CurrentItem+Multiplier, CurrentI+1>(std::index_sequence<Is...>{});
 	}
@@ -164,9 +169,9 @@ constexpr size_t getBinaryOffset(Fmt&&, std::index_sequence<Items...>)
 
 		if (formatMode.shouldPad()) {
 			if (doesFormatAlign(itemSizes[i+1])) {
-				auto currentAlignment = (size % DEFAULT_ALIGNMENT);
+				auto currentAlignment = (size % itemSizes[i + 1]);
 				if (currentAlignment != 0) {
-					size += DEFAULT_ALIGNMENT - currentAlignment;
+					size += itemSizes[i + 1] - currentAlignment;
 				}
 			}
 		}	
