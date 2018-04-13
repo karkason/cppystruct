@@ -39,7 +39,7 @@ struct FormatMode
 		static constexpr bool shouldPad() { return padding; }; \
 	}
 
-SET_FORMAT_MODE('@', true, true);
+SET_FORMAT_MODE('@', true, false);
 SET_FORMAT_MODE('>', false, true);
 SET_FORMAT_MODE('!', false, true);
 
@@ -57,30 +57,31 @@ struct BigEndianFormat
 	static constexpr size_t size() { return 0; }
 };
 
-#define SET_FORMAT_CHAR(ch, s) \
+#define SET_FORMAT_CHAR(ch, s, rep_type) \
     template <> struct BigEndianFormat<ch> { \
 		static constexpr size_t size() { return s; } \
+		using RepresentedType = rep_type; \
 	}
 
-SET_FORMAT_CHAR('x', 1);
-SET_FORMAT_CHAR('b', 1);
-SET_FORMAT_CHAR('B', 1);
-SET_FORMAT_CHAR('c', 1);
-SET_FORMAT_CHAR('s', 1);
+SET_FORMAT_CHAR('x', 1, char);
+SET_FORMAT_CHAR('b', 1, signed char);
+SET_FORMAT_CHAR('B', 1, unsigned char);
+SET_FORMAT_CHAR('c', 1, char);
+SET_FORMAT_CHAR('s', 1, char);
 
 // Pascal strings are not supported ideologically
 //SET_FORMAT_CHAR('p', 1); 
 
-SET_FORMAT_CHAR('h', 2);
-SET_FORMAT_CHAR('H', 2);
-SET_FORMAT_CHAR('i', 4);
-SET_FORMAT_CHAR('I', 4);
-SET_FORMAT_CHAR('l', 4);
-SET_FORMAT_CHAR('L', 4);
-SET_FORMAT_CHAR('q', 8);
-SET_FORMAT_CHAR('Q', 8);
-SET_FORMAT_CHAR('f', 4);
-SET_FORMAT_CHAR('d', 8);
+SET_FORMAT_CHAR('h', 2, short);
+SET_FORMAT_CHAR('H', 2, unsigned short);
+SET_FORMAT_CHAR('i', 4, int);
+SET_FORMAT_CHAR('I', 4, unsigned int);
+SET_FORMAT_CHAR('l', 4, long);
+SET_FORMAT_CHAR('L', 4, unsigned long);
+SET_FORMAT_CHAR('q', 8, long long);
+SET_FORMAT_CHAR('Q', 8, unsigned long long);
+SET_FORMAT_CHAR('f', 4, float);
+SET_FORMAT_CHAR('d', 8, double);
 
 
 template <typename Fmt>
