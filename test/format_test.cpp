@@ -3,7 +3,7 @@
 #include <catch.hpp>
 
 #define REQUIRE_STATIC(x) REQUIRE(x); \
-						  //static_assert(x, #x);
+						  static_assert(x, #x);
 
 TEST_CASE("Item count without format-count", "[cppystruct::format]")
 {
