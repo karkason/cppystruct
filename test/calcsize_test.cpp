@@ -3,7 +3,7 @@
 #include <catch.hpp>
 
 #define REQUIRE_STATIC(x) REQUIRE(x); \
-						  //static_assert(x, #x);
+						  static_assert(x, #x);
 
 TEST_CASE("no count, native byte order (with padding)", "[cppystruct::calcsize]")
 {
