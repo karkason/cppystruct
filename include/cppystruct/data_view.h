@@ -4,15 +4,19 @@
 #include <cstdint>
 #include <cstring>
 #include <algorithm>
+#include <string_view>
 
 #include "cppystruct/string.h"
 
 
 namespace pystruct {
 
+template <typename T>
 class data_view {
 public:
-   constexpr data_view(char* b, bool bigEndian) : bytes(b), isBigEndian(bigEndian) {}
+   constexpr data_view(T* b, bool bigEndian) : bytes(b), isBigEndian(bigEndian) {}
+
+   // Store
 
    constexpr void store(char v) {
 	   bytes[0] = v;
@@ -132,9 +136,130 @@ public:
 	   }
    }
 
+
+
+
+
+   // Get
+   template <typename T>
+   constexpr T get();
+
+   template <>
+   constexpr char get() {
+      return bytes[0];
+   }
+
+   template <>
+   constexpr uint16_t get() {
+      uint16_t v = 0;
+      if (!isBigEndian) {
+         v += bytes[0];
+         v += (static_cast<uint16_t>(bytes[1]) << 8);
+      } else {
+         v += bytes[1];
+         v += (static_cast<uint16_t>(bytes[0]) << 8);
+      }
+
+	  return v;
+   }
+
+   template <>
+   constexpr uint32_t get() {
+      uint32_t v = 0;
+      if (!isBigEndian) {
+         v += bytes[0];
+         v += (static_cast<uint32_t>(bytes[1]) << 8);
+         v += (static_cast<uint32_t>(bytes[2]) << 16);
+         v += (static_cast<uint32_t>(bytes[3]) << 24);
+      } else {
+         v += bytes[3];
+         v += (static_cast<uint32_t>(bytes[2]) << 8);
+         v += (static_cast<uint32_t>(bytes[1]) << 16);
+		 v += (static_cast<uint32_t>(bytes[0]) << 24);
+      }
+
+     return v;
+   }
+
+   template <>
+   constexpr uint64_t get() {
+      uint64_t v = 0;
+      if (!isBigEndian) {
+         v += bytes[0];
+         v += (static_cast<uint64_t>(bytes[1]) << 8);
+         v += (static_cast<uint64_t>(bytes[2]) << 16);
+         v += (static_cast<uint64_t>(bytes[3]) << 24);
+         v += (static_cast<uint64_t>(bytes[4]) << 32);
+         v += (static_cast<uint64_t>(bytes[5]) << 40);
+         v += (static_cast<uint64_t>(bytes[6]) << 48);
+         v += (static_cast<uint64_t>(bytes[7]) << 56);
+      } else { 
+         v += bytes[7];
+         v += (static_cast<uint64_t>(bytes[6]) << 8);
+         v += (static_cast<uint64_t>(bytes[5]) << 16);
+         v += (static_cast<uint64_t>(bytes[4]) << 24);
+         v += (static_cast<uint64_t>(bytes[3]) << 32);
+         v += (static_cast<uint64_t>(bytes[2]) << 40);
+         v += (static_cast<uint64_t>(bytes[1]) << 48);
+         v += (static_cast<uint64_t>(bytes[0]) << 56);
+      }
+
+     return v;
+   }
+
+   template <>
+   constexpr int8_t get() {
+      uint8_t b = get<char>();
+      return static_cast<int8_t>(b - 0xFFULL - 1);
+   }
+
+   template <>
+   constexpr int16_t get() {
+      uint16_t b = get<uint16_t>();
+      return static_cast<int16_t>(b - 0xFFFFULL - 1);
+   }
+
+   template <>
+   constexpr int32_t get() {
+      uint32_t b = get<uint32_t>();
+      return static_cast<int32_t>(b - 0xFFFFFFFFULL - 1);
+   }
+
+   template <>
+   constexpr int64_t get() {
+      uint64_t b = get<uint64_t>();
+      return static_cast<int64_t>(b - 0xFFFFFFFFFFFFFFFFULL - 1);
+   }
+
+   template <>
+   double get() {
+      double v = *(double*)bytes;
+      if (isBigEndian) {
+         std::reverse((char*)&v, (char*)&v + sizeof(double));
+      }
+
+      return v;
+   }
+     
+   template <>
+   float get() {
+      float v = *(float*)bytes;
+      if (isBigEndian) {
+         std::reverse((char*)&v, (char*)&v + sizeof(float));
+      }
+
+      return v;
+   }
+
+   template <>
+   constexpr std::string_view get() {
+      return std::string_view(bytes, size);
+   }
+
+   size_t size = 0;
 private:
 	bool isBigEndian;
-	char* bytes;
+	T* bytes;
 };
 
 } // namespace pystruct

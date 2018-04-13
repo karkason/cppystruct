@@ -33,7 +33,7 @@ constexpr int packElement(char* data, bool bigEndian, FormatType format, RepType
 		elem.size = std::min(elem.size, format.size);
 	}
 
-	data_view view(data, bigEndian);
+	data_view<char> view(data, bigEndian);
 	view.store(elem);
 	return 0;
 }

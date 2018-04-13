@@ -6,6 +6,10 @@ namespace pystruct {
 
 struct SizedString
 {
+	constexpr SizedString(const char* str, size_t sz) 
+		: data(str), size(sz)
+	{};
+
 	template <size_t Size>
 	constexpr SizedString(const char(&str)[Size])
 		: data(str), size(Size - 1)
