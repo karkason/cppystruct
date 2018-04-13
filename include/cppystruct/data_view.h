@@ -5,6 +5,9 @@
 #include <cstring>
 #include <algorithm>
 
+#include "cppystruct/string.h"
+
+
 namespace pystruct {
 
 class data_view {
@@ -120,6 +123,12 @@ public:
 	   *(float*)bytes = f;
 	   if (isBigEndian) {
 		   std::reverse(bytes, bytes + sizeof(float));
+	   }
+   }
+
+   constexpr void store(const SizedString& str) {
+	   for (size_t i = 0; i < str.size; i++) {
+		   bytes[i] = str.data[i];
 	   }
    }
 

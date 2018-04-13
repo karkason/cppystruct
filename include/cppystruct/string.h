@@ -3,6 +3,18 @@
 #include <utility>
 
 namespace pystruct {
+
+struct SizedString
+{
+	template <size_t Size>
+	constexpr SizedString(const char(&str)[Size])
+		: data(str), size(Size - 1)
+	{}
+
+	const char* data;
+	size_t size;
+};
+
 namespace internal {
 	
 struct format_string {

@@ -2,7 +2,6 @@
 #include <array>
 
 #include "cppystruct/calcsize.h"
-#include "cppystruct/endianess.h"
 #include "cppystruct/data_view.h"
 
 
@@ -13,7 +12,6 @@ template <typename Fmt, typename... Args>
 constexpr auto pack(Fmt&&, Args&&... args);
 
 namespace internal {
-
 
 template <typename Fmt, size_t... Indices, typename... Args>
 constexpr auto pack(Fmt&&, std::index_sequence<Indices...>, Args&&... args);
@@ -28,8 +26,13 @@ constexpr auto pack(Fmt&&, Args&&... args)
 }
 
 template <typename RepType>
-constexpr int packElement(char* data, bool bigEndian, RepType elem)
+constexpr int packElement(char* data, bool bigEndian, FormatType format, RepType elem)
 {
+	if constexpr (std::is_same_v<RepType, SizedString>) {
+		// Trim the string size to the repeat count specified in the format
+		elem.size = std::min(elem.size, format.size);
+	}
+
 	data_view view(data, bigEndian);
 	view.store(elem);
 	return 0;
@@ -44,11 +47,14 @@ constexpr auto internal::pack(Fmt&&, std::index_sequence<Items...>, Args&&... ar
 	using ArrayType = std::array<char, pystruct::calcsize(Fmt{})>;
 	ArrayType output{};
 
-	using Types = std::tuple<typename pystruct::BigEndianFormat<pystruct::getTypeOfItem<Items>(Fmt{})>::RepresentedType ...>;
+	constexpr FormatType formats[] = { pystruct::getTypeOfItem<Items>(Fmt{})... };
+	using Types = std::tuple<typename pystruct::BigEndianFormat<
+		formats[Items].formatChar
+	>::RepresentedType ...>;
 	Types t = std::forward_as_tuple(std::forward<Args>(args)...);
 
 	constexpr size_t offsets[] = { getBinaryOffset<Items>(Fmt{})... };
-	int _[] = { packElement(output.data() + offsets[Items],  formatMode.isBigEndian(), std::get<Items>(t))... };
+	int _[] = { packElement(output.data() + offsets[Items],  formatMode.isBigEndian(), formats[Items], std::get<Items>(t))... };
 	(void)_; // _ is a dummy for pack expansion
 
 	return output;

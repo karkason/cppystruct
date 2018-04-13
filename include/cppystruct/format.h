@@ -48,6 +48,12 @@ constexpr bool doesFormatAlign(size_t size)
 	return size > 1;
 }
 
+struct FormatType
+{
+	size_t size;
+	char formatChar;
+};
+
 
 // Specifying the Big Endian format
 template <char FormatChar>
@@ -67,7 +73,7 @@ SET_FORMAT_CHAR('x', 1, char);
 SET_FORMAT_CHAR('b', 1, signed char);
 SET_FORMAT_CHAR('B', 1, unsigned char);
 SET_FORMAT_CHAR('c', 1, char);
-SET_FORMAT_CHAR('s', 1, char);
+SET_FORMAT_CHAR('s', 1, SizedString);
 
 // Pascal strings are not supported ideologically
 //SET_FORMAT_CHAR('p', 1); 
@@ -118,7 +124,11 @@ constexpr auto countItems(Fmt&&)
 			continue;
 		}
 
-		itemCount += multiplier;
+		if (currentChar == 's') {
+			itemCount++;
+		} else {
+			itemCount += multiplier;
+		}
 		multiplier = 1;
 	}
 
@@ -126,7 +136,7 @@ constexpr auto countItems(Fmt&&)
 }
 
 template <size_t Item, typename Fmt, size_t CurrentItem=0, size_t CurrentI=0, size_t Multiplier=1, size_t... Is>
-constexpr char getTypeOfItem(std::index_sequence<Is...>)
+constexpr auto getTypeOfItem(std::index_sequence<Is...>)
 {
 	constexpr char chars[] = { Fmt::at(Is)... };
 
@@ -139,20 +149,29 @@ constexpr char getTypeOfItem(std::index_sequence<Is...>)
 		return getTypeOfItem<Item, Fmt, CurrentItem, numberAndIndex.second, numberAndIndex.first>(std::index_sequence<Is...>{});
 	}
 
-	if constexpr ((Item >= CurrentItem) && (Item < (CurrentItem + Multiplier))) {
-		if constexpr(CurrentI < Fmt::size()) {
-			constexpr char currentChar = Fmt::at(CurrentI);
-			return currentChar;
+	if constexpr(CurrentI < Fmt::size()) {
+		constexpr char currentChar = Fmt::at(CurrentI);
+		if constexpr (((currentChar != 's') && (Item >= CurrentItem) && (Item < (CurrentItem + Multiplier)))
+			|| ((currentChar == 's') && (Item == CurrentItem))) {
+			if (currentChar != 's') {
+				return FormatType{ BigEndianFormat<currentChar>::size(), currentChar };
+			} else {
+				return FormatType{ Multiplier, currentChar };
+			}
 		} else {
-			return 0;
+			if constexpr(currentChar != 's') {
+				return getTypeOfItem<Item, Fmt, CurrentItem + Multiplier, CurrentI + 1>(std::index_sequence<Is...>{});
+			} else {
+				return getTypeOfItem<Item, Fmt, CurrentItem + 1, CurrentI + 1>(std::index_sequence<Is...>{});
+			}
 		}
 	} else {
-		return getTypeOfItem<Item, Fmt, CurrentItem+Multiplier, CurrentI+1>(std::index_sequence<Is...>{});
+		return FormatType{0, 0};
 	}
 }
 
 template <size_t Item, typename Fmt>
-constexpr char getTypeOfItem(Fmt&&)
+constexpr auto getTypeOfItem(Fmt&&)
 {
 	return getTypeOfItem<Item, Fmt>(std::make_index_sequence<Fmt::size()>());
 }
@@ -160,19 +179,20 @@ constexpr char getTypeOfItem(Fmt&&)
 template <typename Fmt, size_t... Items>
 constexpr size_t getBinaryOffset(Fmt&&, std::index_sequence<Items...>)
 {
-	constexpr char itemTypes[] = { getTypeOfItem<Items>(Fmt{})... };
-	constexpr size_t itemSizes[] = { BigEndianFormat<itemTypes[Items]>::size()... };
+	constexpr FormatType itemTypes[] = { getTypeOfItem<Items>(Fmt{})... };
+	constexpr size_t formatSizes[] = { BigEndianFormat<itemTypes[Items].formatChar>::size()... };
+
 	constexpr auto formatMode = pystruct::getFormatMode(Fmt{});
 
 	size_t size = 0;
 	for(size_t i = 0; i < sizeof...(Items) - 1; i++) {
-		size += itemSizes[i];
+		size += itemTypes[i].size;
 
 		if (formatMode.shouldPad()) {
-			if (doesFormatAlign(itemSizes[i+1])) {
-				auto currentAlignment = (size % itemSizes[i + 1]);
+			if (doesFormatAlign(formatSizes[i+1])) {
+				auto currentAlignment = (size % formatSizes[i + 1]);
 				if (currentAlignment != 0) {
-					size += itemSizes[i + 1] - currentAlignment;
+					size += formatSizes[i + 1] - currentAlignment;
 				}
 			}
 		}	

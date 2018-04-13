@@ -17,7 +17,7 @@ constexpr size_t calcsize(Fmt&&)
 {
 	constexpr auto numItems = countItems(Fmt{});
 	return getBinaryOffset<numItems - 1>(Fmt{}) 
-		+ BigEndianFormat<getTypeOfItem<numItems - 1>(Fmt{})>::size();
+		+ getTypeOfItem<numItems - 1>(Fmt{}).size;
 }
 
 } // namespace pystruct
