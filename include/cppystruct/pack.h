@@ -3,6 +3,7 @@
 
 #include "cppystruct/calcsize.h"
 #include "cppystruct/endianess.h"
+#include "cppystruct/data_view.h"
 
 
 namespace pystruct {
@@ -27,9 +28,10 @@ constexpr auto pack(Fmt&&, Args&&... args)
 }
 
 template <typename RepType>
-int packElement(void* data, const RepType& elem)
+constexpr int packElement(char* data, bool bigEndian, RepType elem)
 {
-	*static_cast<RepType*>(data) = elem;
+	data_view view(data, bigEndian);
+	view.store(elem);
 	return 0;
 }
 
@@ -43,10 +45,10 @@ constexpr auto internal::pack(Fmt&&, std::index_sequence<Items...>, Args&&... ar
 	ArrayType output{};
 
 	using Types = std::tuple<typename pystruct::BigEndianFormat<pystruct::getTypeOfItem<Items>(Fmt{})>::RepresentedType ...>;
-	Types t = std::forward_as_tuple(swapBytesIfBigEndian(std::forward<Args>(args), formatMode.isBigEndian())...);
+	Types t = std::forward_as_tuple(std::forward<Args>(args)...);
 
 	constexpr size_t offsets[] = { getBinaryOffset<Items>(Fmt{})... };
-	int _[] = { packElement(output.data() + offsets[Items], std::get<Items>(t))... };
+	int _[] = { packElement(output.data() + offsets[Items],  formatMode.isBigEndian(), std::get<Items>(t))... };
 	(void)_; // _ is a dummy for pack expansion
 
 	return output;
