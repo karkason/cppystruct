@@ -37,7 +37,7 @@ matrix:
       apt:
         sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-5.0']
         packages: ['g++-6', 'clang-5.0']
-- os: linux
+  - os: linux
     compiler: clang
     env:
       - COMPILER=clang++-6.0
@@ -47,19 +47,12 @@ matrix:
         sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-6.0']
         packages: ['g++-6', 'clang-6.0']
 
-
 ################
 # build script #
 ################
 
 script:
-  # get CMake and Ninja (only for systems with brew - macOS)
-  - |
-     if [[ (-x $(which brew)) ]]; then
-       brew update
-       brew upgrade cmake
-       cmake --version
-     fi
+
   # make sure CXX is correctly set
   - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
 
@@ -72,4 +65,3 @@ script:
   - cmake .. ${CMAKE_OPTIONS} && cmake --build . --config Release
   - ctest -C Release -V -j
   - cd ..
-fi
