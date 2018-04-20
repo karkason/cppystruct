@@ -69,6 +69,7 @@ if(CPPYSTRUCT_Coverage)
     # collect all source files from the chosen include dir
     file(GLOB_RECURSE SOURCE_FILES ${CPPYSTRUCT_INCLUDE_BUILD_DIR}*.h)
 
+    message(STATUS "Gcov bin is: ${GCOV_BIN}")
     # add target to collect coverage information and generate HTML file
     # (filter script from https://stackoverflow.com/a/43726240/266378)
     add_custom_target(lcov_html

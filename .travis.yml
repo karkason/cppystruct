@@ -104,3 +104,4 @@ script:
 
   - cmake --build . -- -j${JOBS}
   - ctest --output-on-failure -j${JOBS}
+  - ls -R
