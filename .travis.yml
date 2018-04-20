@@ -31,17 +31,6 @@ matrix:
     - env: COMPILER=clang++-5.0 BUILD_TYPE=Release
       addons: *clang40
 
-    # GCC 6
-    - env: COMPILER=g++-6 BUILD_TYPE=Debug
-      addons: &gcc6
-        apt:
-          packages: g++-6
-          sources:
-            - ubuntu-toolchain-r-test
-
-    - env: COMPILER=g++-6 BUILD_TYPE=Release
-      addons: *gcc6
-
     # GCC 7
     - env: COMPILER=g++-7 BUILD_TYPE=Debug
       addons: &gcc7

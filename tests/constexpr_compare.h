@@ -24,3 +24,51 @@ constexpr bool operator==(const std::pair<F, S>& lhs, const std::pair<F2, S2>& r
     return (lhs.first == static_cast<F>(rhs.first)) &&
         (lhs.second == static_cast<S>(rhs.second));
 }
+
+
+
+
+// Crazy workaround because std::string_view.operator== isn't constexpr...
+constexpr bool equals(const std::string_view lhs, const std::string_view rhs)
+{
+    if(lhs.size() != rhs.size()) {
+        return false;
+    }
+
+    for(size_t i = 0; i < lhs.size(); i++) {
+        if(lhs[i] != rhs[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+template <typename Lhs, typename Rhs>
+constexpr bool equals(const Lhs& lhs, const Rhs& rhs)
+{
+    return lhs == rhs;
+}
+
+template <typename... Lhs, typename... Rhs, size_t... Is>
+constexpr bool equals(const std::tuple<Lhs...>& lhs, const std::tuple<Rhs...>& rhs, std::index_sequence<Is...>)
+{
+    bool res[] = { equals(std::get<Is>(lhs), std::get<Is>(rhs))... };
+    for(bool b : res) {
+        if(!b) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+template <typename... Lhs, typename... Rhs>
+constexpr bool equals(const std::tuple<Lhs...>& lhs, const std::tuple<Rhs...>& rhs)
+{
+    if constexpr (sizeof...(Lhs) != sizeof...(Rhs)) {
+        return false;
+    }
+
+    return equals(lhs, rhs, std::make_index_sequence<sizeof...(Lhs)>());
+}
