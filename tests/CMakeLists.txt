@@ -2,36 +2,6 @@ cmake_minimum_required(VERSION 3.8)
 project(CppystructTests CXX)
 
 option(CPPYSTRUCT_Coverage "Build test suite with coverage information" OFF)
-if(CPPYSTRUCT_Coverage)
-    message(STATUS "Building test suite with coverage information")
-    if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        message(FATAL_ERROR "CPPYSTRUCT_Coverage requires GCC.")
-    endif()
-
-    # enable profiling
-    set(CMAKE_CXX_FLAGS "--coverage -g -O0 -fprofile-arcs -ftest-coverage")
-
-    # from https://github.com/RWTH-HPC/CMake-codecov/blob/master/cmake/FindGcov.cmake
-    get_filename_component(COMPILER_PATH "${CMAKE_CXX_COMPILER}" PATH)
-    string(REGEX MATCH "^[0-9]+" GCC_VERSION "${CMAKE_CXX_COMPILER_VERSION}")
-    find_program(GCOV_BIN NAMES gcov-${GCC_VERSION} gcov HINTS ${COMPILER_PATH})
-
-    # collect all source files from the chosen include dir
-    file(GLOB_RECURSE SOURCE_FILES ${CPPYSTRUCT_INCLUDE_BUILD_DIR}*.h)
-
-    # add target to collect coverage information and generate HTML file
-    # (filter script from https://stackoverflow.com/a/43726240/266378)
-    add_custom_target(lcov_html
-        COMMAND lcov --directory . --capture --output-file json.info --gcov-tool ${GCOV_BIN} --rc lcov_branch_coverage=1
-        COMMAND lcov -e json.info ${SOURCE_FILES} --output-file json.info.filtered --rc lcov_branch_coverage=1
-        COMMAND ${CMAKE_SOURCE_DIR}/test/thirdparty/imapdl/filterbr.py json.info.filtered > json.info.filtered.noexcept
-        COMMAND genhtml --title "CPPyStruct" --legend --demangle-cpp --output-directory html --show-details --branch-coverage json.info.filtered.noexcept
-        COMMENT "Generating HTML report test/html/index.html"
-    )
-else()
-    set(CMAKE_CXX_FLAGS "")
-endif()
-
 
 # will make visual studio generated project group files
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -78,8 +48,35 @@ target_compile_options(cppystruct_tests_config INTERFACE
         -Wpedantic
         -Wshadow
     >
-    ${CMAKE_CXX_FLAGS}
 )
+
+if(CPPYSTRUCT_Coverage)
+    message(STATUS "Building test suite with coverage information")
+    if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        message(FATAL_ERROR "CPPYSTRUCT_Coverage requires GCC.")
+    endif()
+
+    # enable profiling
+    target_compile_options(cppystruct_tests_config INTERFACE --coverage -g -O0 -fprofile-arcs -ftest-coverage)
+
+    # from https://github.com/RWTH-HPC/CMake-codecov/blob/master/cmake/FindGcov.cmake
+    get_filename_component(COMPILER_PATH "${CMAKE_CXX_COMPILER}" PATH)
+    string(REGEX MATCH "^[0-9]+" GCC_VERSION "${CMAKE_CXX_COMPILER_VERSION}")
+    find_program(GCOV_BIN NAMES gcov-${GCC_VERSION} gcov HINTS ${COMPILER_PATH})
+
+    # collect all source files from the chosen include dir
+    file(GLOB_RECURSE SOURCE_FILES ${CPPYSTRUCT_INCLUDE_BUILD_DIR}*.h)
+
+    # add target to collect coverage information and generate HTML file
+    # (filter script from https://stackoverflow.com/a/43726240/266378)
+    add_custom_target(lcov_html
+        COMMAND lcov --directory . --capture --output-file json.info --gcov-tool ${GCOV_BIN} --rc lcov_branch_coverage=1
+        COMMAND lcov -e json.info ${SOURCE_FILES} --output-file json.info.filtered --rc lcov_branch_coverage=1
+        COMMAND ${CMAKE_SOURCE_DIR}/test/thirdparty/imapdl/filterbr.py json.info.filtered > json.info.filtered.noexcept
+        COMMAND genhtml --title "CPPyStruct" --legend --demangle-cpp --output-directory html --show-details --branch-coverage json.info.filtered.noexcept
+        COMMENT "Generating HTML report test/html/index.html"
+    )
+endif()
 
 # for tests to find the catch header
 target_include_directories(cppystruct_tests_config INTERFACE
