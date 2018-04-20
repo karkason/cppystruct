@@ -16,20 +16,20 @@ cache:
 matrix:
   include:
     # Clang 5.0
-    - env: COMPILER=clang++-5.0 BUILD_TYPE=Debug
-      addons: &clang40
-        apt:
-          packages:
-            - clang-5.0
-            - g++-7
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-5.0
-            - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main'
-              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
-
-    - env: COMPILER=clang++-5.0 BUILD_TYPE=Release
-      addons: *clang40
+    #- env: COMPILER=clang++-5.0 BUILD_TYPE=Debug
+    #  addons: &clang40
+    #    apt:
+    #      packages:
+    #        - clang-5.0
+    #        - g++-7
+    #      sources:
+    #        - ubuntu-toolchain-r-test
+    #        - llvm-toolchain-trusty-5.0
+    #        - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main'
+    #          key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+#
+#    #- env: COMPILER=clang++-5.0 BUILD_TYPE=Release
+    #  addons: *clang40
 
     # GCC 7
     - env: COMPILER=g++-7 BUILD_TYPE=Debug
@@ -39,8 +39,18 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
 
+    #- env: COMPILER=g++-7 BUILD_TYPE=Release
+    #  addons: *gcc7
+
+    # Coveralls (http://gronlier.fr/blog/2015/01/adding-code-coverage-to-your-c-project/)
     - env: COMPILER=g++-7 BUILD_TYPE=Release
       addons: *gcc7
+      before_script:
+        - pip install --user cpp-coveralls
+      after_success:
+        - coveralls --build-root test --include include/cppystruct --gcov 'gcov-4.9' --gcov-options '\-lp'
+      env:
+        - CMAKE_OPTIONS=-DCPPYSTRUCT_Coverage=ON
 
 
 ################
