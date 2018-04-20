@@ -25,7 +25,7 @@ if(CPPYSTRUCT_Coverage)
         COMMAND lcov --directory . --capture --output-file json.info --gcov-tool ${GCOV_BIN} --rc lcov_branch_coverage=1
         COMMAND lcov -e json.info ${SOURCE_FILES} --output-file json.info.filtered --rc lcov_branch_coverage=1
         COMMAND ${CMAKE_SOURCE_DIR}/test/thirdparty/imapdl/filterbr.py json.info.filtered > json.info.filtered.noexcept
-        COMMAND genhtml --title "CppyStruct" --legend --demangle-cpp --output-directory html --show-details --branch-coverage json.info.filtered.noexcept
+        COMMAND genhtml --title "CPPyStruct" --legend --demangle-cpp --output-directory html --show-details --branch-coverage json.info.filtered.noexcept
         COMMENT "Generating HTML report test/html/index.html"
     )
 endif()
@@ -76,6 +76,7 @@ target_compile_options(cppystruct_tests_config INTERFACE
         -Wpedantic
         -Wshadow
     >
+    ${CMAKE_CXX_FLAGS}
 )
 
 # for tests to find the catch header
