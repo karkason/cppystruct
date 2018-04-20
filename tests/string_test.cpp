@@ -1,16 +1,8 @@
 #include "cppystruct.h"
 #include "constexpr_require.h"
+#include "constexpr_compare.h"
 
 #include <catch.hpp>
-
-
-template <typename F, typename S, typename F2, typename S2>
-constexpr bool operator==(const std::pair<F, S>& lhs, const std::pair<F2, S2>& rhs)
-{
-	return (lhs.first == static_cast<F>(rhs.first)) &&
-        (lhs.second == static_cast<S>(rhs.second));
-}
-
 
 TEST_CASE("Consume String", "[cppystruct::string]")
 {

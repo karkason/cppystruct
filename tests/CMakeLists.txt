@@ -38,8 +38,6 @@ target_compile_options(cppystruct_tests_config INTERFACE
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:
         -fno-strict-aliasing
         -Wall
-        -Wcast-align
-        -Wconversion
         -Wctor-dtor-privacy
         -Werror
         -Wextra
@@ -66,18 +64,22 @@ target_link_libraries(test_catch
 add_dependencies(test_catch catch)
 set_property(TARGET test_catch PROPERTY FOLDER "CPPYSTRUCT_tests")
 
-
 function(add_test_exe name constexpr)
     set(exe_name ${name})
 
    if (${constexpr})
-        add_definitions(-DWITH_CONSTEXPR_REQUIRE)
         set(exe_name ${name}_constexpr)
     else()
         add_test_exe(${name} 1)
     endif ()
 
     add_executable(${exe_name} ${name}.cpp)
+
+    if (${constexpr})
+        target_compile_definitions(${exe_name}
+            PUBLIC -DWITH_CONSTEXPR_REQUIRE)
+    endif ()
+
     target_link_libraries(${exe_name}
         test_catch
     )

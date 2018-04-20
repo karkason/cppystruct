@@ -1,75 +1,98 @@
-#########################
-# project configuration #
-#########################
+# Based on https://github.com/Microsoft/GSL/blob/master/.travis.yml
 
-# C++ project
 language: cpp
+sudo: false
+notifications:
+  email: false
 
+# Use Linux unless specified otherwise
+os: linux
 dist: trusty
-sudo: required
-group: edge
 
-
-################
-# build matrix #
-################
+cache:
+  directories:
+    - ${TRAVIS_BUILD_DIR}/DEPS_DIR
 
 matrix:
   include:
-  # Linux / GCC
-  - os: linux
-    compiler: gcc
-    env:
-      - COMPILER=g++-7
-      - CXXFLAGS=-std=c++17
-    addons:
-      apt:
-        sources: ['ubuntu-toolchain-r-test']
-        packages: ['g++-7']
+    # Clang 5.0
+    - env: COMPILER=clang++-5.0 BUILD_TYPE=Debug
+      addons: &clang40
+        apt:
+          packages:
+            - clang-5.0
+            - g++-7
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+            - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-  # Linux / Clang
-  - os: linux
-    compiler: clang
-    env:
-      - COMPILER=clang++-5.0
-      - CXXFLAGS=-std=c++1z
-    addons:
-      apt:
-        sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-5.0']
-        packages: ['g++-6', 'clang-5.0']
-- os: linux
-    compiler: clang
-    env:
-      - COMPILER=clang++-6.0
-      - CXXFLAGS=-std=c++17
-    addons:
-      apt:
-        sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-6.0']
-        packages: ['g++-6', 'clang-6.0']
+    - env: COMPILER=clang++-5.0 BUILD_TYPE=Release
+      addons: *clang40
+
+    # GCC 7
+    - env: COMPILER=g++-7 BUILD_TYPE=Debug
+      addons: &gcc7
+        apt:
+          packages: g++-7
+          sources:
+            - ubuntu-toolchain-r-test
+
+    - env: COMPILER=g++-7 BUILD_TYPE=Release
+      addons: *gcc7
 
 
 ################
 # build script #
 ################
 
-script:
-  # get CMake and Ninja (only for systems with brew - macOS)
-  - |
-     if [[ (-x $(which brew)) ]]; then
-       brew update
-       brew upgrade cmake
-       cmake --version
-     fi
-  # make sure CXX is correctly set
-  - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
-
-  # show OS/compiler version
+install:
   - uname -a
-  - $CXX --version
 
-  # compile and execute unit tests
+  # Set the ${CXX} variable properly
+  - export CXX=${COMPILER}
+  - ${CXX} --version
+
+  # Dependencies required by the CI are installed in ${TRAVIS_BUILD_DIR}/deps/
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir -p "${DEPS_DIR}"
+  - cd "${DEPS_DIR}"
+
+  # Travis machines have 2 cores
+  - JOBS=2
+
+  - |
+    LLVM_INSTALL=${DEPS_DIR}/llvm/install
+    # if in linux and compiler clang and llvm not installed
+    if [[ "${TRAVIS_OS_NAME}" == "linux" && "${CXX%%+*}" == "clang" && -n "$(ls -A ${LLVM_INSTALL})" ]]; then
+      if   [[ "${CXX}" == "clang++-3.6" ]]; then LLVM_VERSION="3.6.2";
+      elif [[ "${CXX}" == "clang++-3.7" ]]; then LLVM_VERSION="3.7.1";
+      elif [[ "${CXX}" == "clang++-3.8" ]]; then LLVM_VERSION="3.8.1";
+      elif [[ "${CXX}" == "clang++-3.9" ]]; then LLVM_VERSION="3.9.1";
+      fi
+      LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
+      LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
+      LIBCXXABI_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz"
+      mkdir -p llvm llvm/build llvm/projects/libcxx llvm/projects/libcxxabi
+      travis_retry wget -O - ${LLVM_URL} | tar --strip-components=1 -xJ -C llvm
+      travis_retry wget -O - ${LIBCXX_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxx
+      travis_retry wget -O - ${LIBCXXABI_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxxabi
+      (cd llvm/build && cmake .. -DCMAKE_INSTALL_PREFIX=${LLVM_INSTALL})
+      (cd llvm/build/projects/libcxx && make install -j2)
+      (cd llvm/build/projects/libcxxabi && make install -j2)
+      export CXXFLAGS="-isystem ${LLVM_INSTALL}/include/c++/v1"
+      export LDFLAGS="-L ${LLVM_INSTALL}/lib -l c++ -l c++abi"
+      export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${LLVM_INSTALL}/lib"
+    fi
+
+before_script:
+  # have CMake to generate build files
+  - cmake --version
+  - cd "${TRAVIS_BUILD_DIR}"
   - mkdir -p build && cd build
-  - cmake .. ${CMAKE_OPTIONS} && cmake --build . --config Release
-  - ctest -C Release -V -j
-  - cd ..
-fi
+  - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+
+script:
+  - cmake --build . -- -j${JOBS}
+  - ctest --output-on-failure -j${JOBS}

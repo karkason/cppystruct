@@ -25,7 +25,7 @@ TEST_CASE("Item count with format-count", "[cppystruct::format]")
 
 	REQUIRE_STATIC(pystruct::countItems(PY_STRING("4s")) == 1);
 	REQUIRE_STATIC(pystruct::countItems(PY_STRING("3c4s")) == 4);
-} 
+}
 
 TEST_CASE("Item count with byte order", "[cppystruct::format]")
 {

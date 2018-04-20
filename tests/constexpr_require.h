@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef TEST_CONSTEXPR
+#ifdef WITH_CONSTEXPR_REQUIRE
 #define REQUIRE_STATIC(x) REQUIRE(x); \
                           static_assert(x, #x);
 #else
