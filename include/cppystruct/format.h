@@ -1,9 +1,10 @@
 #pragma once
-#include <cppystruct/string.h>
+#include "cppystruct/string.h"
+
+#include <string_view>
+
 
 namespace pystruct {
-
-static constexpr size_t DEFAULT_ALIGNMENT = 4; 
 
 constexpr bool isFormatMode(char formatChar)
 {
@@ -18,7 +19,7 @@ constexpr bool isFormatChar(char formatChar)
 		|| formatChar == 'h' || formatChar == 'H' || formatChar == 'i'
 		|| formatChar == 'I' || formatChar == 'l' || formatChar == 'L'
 		|| formatChar == 'q' || formatChar == 'Q' || formatChar == 'f'
-		|| formatChar == 'd' 
+		|| formatChar == 'd'
 		|| internal::isDigit(formatChar);
 }
 
@@ -43,7 +44,7 @@ SET_FORMAT_MODE('@', true, false);
 SET_FORMAT_MODE('>', false, true);
 SET_FORMAT_MODE('!', false, true);
 
-constexpr bool doesFormatAlign(size_t size) 
+constexpr bool doesFormatAlign(size_t size)
 {
 	return size > 1;
 }
@@ -73,10 +74,10 @@ SET_FORMAT_CHAR('x', 1, char);
 SET_FORMAT_CHAR('b', 1, signed char);
 SET_FORMAT_CHAR('B', 1, unsigned char);
 SET_FORMAT_CHAR('c', 1, char);
-SET_FORMAT_CHAR('s', 1, SizedString);
+SET_FORMAT_CHAR('s', 1, std::string_view);
 
 // Pascal strings are not supported ideologically
-//SET_FORMAT_CHAR('p', 1); 
+//SET_FORMAT_CHAR('p', 1);
 
 SET_FORMAT_CHAR('h', 2, short);
 SET_FORMAT_CHAR('H', 2, unsigned short);
@@ -91,7 +92,7 @@ SET_FORMAT_CHAR('d', 8, double);
 
 
 template <typename Fmt>
-constexpr auto getFormatMode(Fmt&&)
+constexpr auto getFormatMode(Fmt)
 {
 	// First format char is a format mode
 	if constexpr(isFormatMode(Fmt::at(0))) {
@@ -103,7 +104,7 @@ constexpr auto getFormatMode(Fmt&&)
 }
 
 template <typename Fmt>
-constexpr auto countItems(Fmt&&)
+constexpr size_t countItems(Fmt)
 {
 	size_t itemCount = 0;
 
@@ -115,12 +116,11 @@ constexpr auto countItems(Fmt&&)
 		}
 
 		if (internal::isDigit(currentChar)) {
-			if (multiplier == 1) {
-				multiplier = currentChar - '0';
-			} else {
-				multiplier = multiplier * 10 + (currentChar - '0');
-			}
+			auto numberAndOffset = internal::consumeNumber(Fmt::value(), i);
 
+			multiplier = numberAndOffset.first;
+			i = numberAndOffset.second;
+			i--; // to combat the i++ in the loop
 			continue;
 		}
 
@@ -136,24 +136,24 @@ constexpr auto countItems(Fmt&&)
 }
 
 template <size_t Item, typename Fmt, size_t CurrentItem=0, size_t CurrentI=0, size_t Multiplier=1, size_t... Is>
-constexpr auto getTypeOfItem(std::index_sequence<Is...>)
+constexpr FormatType getTypeOfItem(std::index_sequence<Is...>)
 {
-	constexpr char chars[] = { Fmt::at(Is)... };
-
-	if constexpr(CurrentI == 0 && isFormatMode(Fmt::at(0))) {
+    if constexpr (CurrentI >= Fmt::size()) {
+        return FormatType{ 0, 0 };
+    } else if constexpr (CurrentI == 0 && isFormatMode(Fmt::at(0))) {
+        // If the first char is a format-mode, skip it
 		return getTypeOfItem<Item, Fmt, CurrentItem, CurrentI+1>(std::index_sequence<Is...>{});
-	}
-
-	if constexpr (CurrentI < Fmt::size() && internal::isDigit(Fmt::at(CurrentI))) {
+	} else if constexpr (internal::isDigit(Fmt::at(CurrentI))) {
+        // If the current char is a digit, consume the number, skip it and pass it as a multiplier
+        constexpr char chars[] = { Fmt::at(Is)... };
 		constexpr auto numberAndIndex = internal::consumeNumber(chars, CurrentI);
 		return getTypeOfItem<Item, Fmt, CurrentItem, numberAndIndex.second, numberAndIndex.first>(std::index_sequence<Is...>{});
-	}
-
-	if constexpr(CurrentI < Fmt::size()) {
+	} else {
+        // If the current char is a format char, parse it
 		constexpr char currentChar = Fmt::at(CurrentI);
 		if constexpr (((currentChar != 's') && (Item >= CurrentItem) && (Item < (CurrentItem + Multiplier)))
 			|| ((currentChar == 's') && (Item == CurrentItem))) {
-			if (currentChar != 's') {
+			if constexpr (currentChar != 's') {
 				return FormatType{ BigEndianFormat<currentChar>::size(), currentChar };
 			} else {
 				return FormatType{ Multiplier, currentChar };
@@ -165,19 +165,17 @@ constexpr auto getTypeOfItem(std::index_sequence<Is...>)
 				return getTypeOfItem<Item, Fmt, CurrentItem + 1, CurrentI + 1>(std::index_sequence<Is...>{});
 			}
 		}
-	} else {
-		return FormatType{0, 0};
 	}
 }
 
 template <size_t Item, typename Fmt>
-constexpr auto getTypeOfItem(Fmt&&)
+constexpr auto getTypeOfItem(Fmt)
 {
 	return getTypeOfItem<Item, Fmt>(std::make_index_sequence<Fmt::size()>());
 }
 
 template <typename Fmt, size_t... Items>
-constexpr size_t getBinaryOffset(Fmt&&, std::index_sequence<Items...>)
+constexpr size_t getBinaryOffset(Fmt, std::index_sequence<Items...>)
 {
 	constexpr FormatType itemTypes[] = { getTypeOfItem<Items>(Fmt{})... };
 	constexpr size_t formatSizes[] = { BigEndianFormat<itemTypes[Items].formatChar>::size()... };
@@ -195,14 +193,14 @@ constexpr size_t getBinaryOffset(Fmt&&, std::index_sequence<Items...>)
 					size += formatSizes[i + 1] - currentAlignment;
 				}
 			}
-		}	
+		}
 	}
 
 	return size;
 }
 
 template <size_t Item, typename Fmt>
-constexpr size_t getBinaryOffset(Fmt&&)
+constexpr size_t getBinaryOffset(Fmt)
 {
 	return getBinaryOffset(Fmt{}, std::make_index_sequence<Item+1>());
 }

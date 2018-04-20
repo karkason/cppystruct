@@ -9,14 +9,14 @@ namespace pystruct {
 
 // Interface
 template <typename Fmt>
-constexpr size_t calcsize(Fmt&&);
+constexpr size_t calcsize(Fmt formatString);
 
 // Implementation
 template <typename Fmt>
-constexpr size_t calcsize(Fmt&&) 
+constexpr size_t calcsize(Fmt)
 {
 	constexpr auto numItems = countItems(Fmt{});
-	return getBinaryOffset<numItems - 1>(Fmt{}) 
+	return getBinaryOffset<numItems - 1>(Fmt{})
 		+ getTypeOfItem<numItems - 1>(Fmt{}).size;
 }
 

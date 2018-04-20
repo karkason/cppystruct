@@ -1,11 +1,19 @@
 cmake_minimum_required(VERSION 3.8)
-project(cppystruct LANGUAGES CXX)
-include(ExternalProject)
-find_package(Git REQUIRED)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED on)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+project(CPPYSTRUCT CXX)
+
+include(ExternalProject)
+find_package(Git)
+
+# creates a library CPPYSTRUCT which is an interface (header files only)
+add_library(CPPYSTRUCT INTERFACE)
+
+# determine whether this is a standalone project or included by other projects
+set(CPPYSTRUCT_STANDALONE_PROJECT OFF)
+if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  set(CPPYSTRUCT_STANDALONE_PROJECT ON)
+endif ()
+
 
 if (MSVC_VERSION GREATER_EQUAL "1900")
     include(CheckCXXCompilerFlag)
@@ -15,37 +23,24 @@ if (MSVC_VERSION GREATER_EQUAL "1900")
     endif()
 endif()
 
-ExternalProject_Add(
-    catch
-    PREFIX ${CMAKE_BINARY_DIR}/catch
-    GIT_REPOSITORY https://github.com/philsquared/Catch.git
-    TIMEOUT 10
-    UPDATE_COMMAND ${GIT_EXECUTABLE} pull
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    INSTALL_COMMAND ""
-    LOG_DOWNLOAD ON
-   )
+# set the CPPYSTRUCT library to be compiled only with C++17
+target_compile_features(CPPYSTRUCT INTERFACE cxx_std_17)
 
-# Expose required variable (CATCH_INCLUDE_DIR) to parent scope
-ExternalProject_Get_Property(catch source_dir)
-set(CATCH_INCLUDE_DIR ${source_dir}/single_include CACHE INTERNAL "Path to include folder for Catch")
+# on *nix systems force the use of -std=c++XX instead of -std=gnu++XX (default)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
+# add include folders to the library and targets that consume it
+target_include_directories(CPPYSTRUCT INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
-# Enable extra warnings to adhere to https://github.com/mapbox/cpp/issues/37
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  set(DESIRED_WARNINGS "${DESIRED_WARNINGS} -Wmost")
-endif()
+install(
+    DIRECTORY include/cppystruct
+    DESTINATION include
+)
 
-# Note: -D_GLIBCXX_USE_CXX11_ABI=0 is needed to support mason packages that are precompiled libs
-# Currently we only depend on a header only library, but this will help avoid issues when more libs are added via mason
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPTIMIZATION_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0 ${DESIRED_WARNINGS}")
-
-
-add_library(Catch INTERFACE)
-target_include_directories(Catch INTERFACE ${CATCH_INCLUDE_DIR})
-include_directories("${CATCH_INCLUDE_DIR}")
-include_directories("${PROJECT_SOURCE_DIR}/include")
-
-file(GLOB TEST_SOURCES test/*.cpp)
-add_executable(unit-tests ${TEST_SOURCES})
+option(CPPYSTRUCT_TEST "Generate tests." ${CPPYSTRUCT_STANDALONE_PROJECT})
+if (CPPYSTRUCT_TEST)
+    enable_testing()
+    add_subdirectory(tests)
+endif ()

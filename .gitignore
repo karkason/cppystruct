@@ -16,6 +16,7 @@ CMakeCache.txt
 CMakeFiles/
 catch/
 
+build/
 Win32/
 x64/
 Debug/

@@ -1,10 +1,9 @@
-#include <cppystruct.h>
+#include "cppystruct.h"
+#include "constexpr_require.h"
 
 #include <catch.hpp>
 
 using namespace std::string_view_literals;
-#define REQUIRE_STATIC(x) REQUIRE(x); \
-						  //static_assert(x, #x);
 
 TEST_CASE("unpack sanity", "[cppystruct::unpack]")
 {
