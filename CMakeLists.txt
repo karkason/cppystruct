@@ -29,10 +29,6 @@ target_compile_features(CPPYSTRUCT INTERFACE cxx_std_17)
 # on *nix systems force the use of -std=c++XX instead of -std=gnu++XX (default)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-endif()
-
 # add include folders to the library and targets that consume it
 target_include_directories(CPPYSTRUCT INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
