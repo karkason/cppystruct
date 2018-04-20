@@ -2,8 +2,6 @@
 ==========
 [![Build Status](https://travis-ci.org/karkason/cppystruct.svg?branch=master)](https://travis-ci.org/karkason/cppystruct)
 
-Use your Python `struct.(un)pack` formats in C++!
-
 Overview
 --------
 
