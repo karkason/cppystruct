@@ -1,6 +1,9 @@
 #pragma once
 #include <cppystruct/string.h>
 
+#include <string_view>
+
+
 namespace pystruct {
 
 static constexpr size_t DEFAULT_ALIGNMENT = 4;
@@ -73,7 +76,7 @@ SET_FORMAT_CHAR('x', 1, char);
 SET_FORMAT_CHAR('b', 1, signed char);
 SET_FORMAT_CHAR('B', 1, unsigned char);
 SET_FORMAT_CHAR('c', 1, char);
-SET_FORMAT_CHAR('s', 1, SizedString);
+SET_FORMAT_CHAR('s', 1, std::string_view);
 
 // Pascal strings are not supported ideologically
 //SET_FORMAT_CHAR('p', 1);

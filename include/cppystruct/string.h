@@ -3,22 +3,6 @@
 #include <utility>
 
 namespace pystruct {
-
-struct SizedString
-{
-	constexpr SizedString(const char* str, size_t sz)
-		: data(str), size(sz)
-	{};
-
-	template <size_t Size>
-	constexpr SizedString(const char(&str)[Size])
-		: data(str), size(Size - 1)
-	{}
-
-	const char* data;
-	size_t size;
-};
-
 namespace internal {
 
 struct format_string {
@@ -29,8 +13,8 @@ constexpr bool isDigit(char ch)
 	return ch >= '0' && ch <= '9';
 }
 
-template <typename T, size_t Size>
-constexpr std::pair<size_t, size_t> consumeNumber(const T (&str)[Size], size_t offset)
+template <size_t Size>
+constexpr std::pair<size_t, size_t> consumeNumber(const char (&str)[Size], size_t offset)
 {
 	int num = 0;
 	size_t i = offset;
