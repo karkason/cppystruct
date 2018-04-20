@@ -104,7 +104,7 @@ constexpr auto getFormatMode(Fmt)
 }
 
 template <typename Fmt>
-constexpr auto countItems(Fmt)
+constexpr size_t countItems(Fmt)
 {
 	size_t itemCount = 0;
 
@@ -116,7 +116,10 @@ constexpr auto countItems(Fmt)
 		}
 
 		if (internal::isDigit(currentChar)) {
-			std::tie(multiplier, i) = internal::consumeNumber(Fmt::value(), i);
+			auto numberAndOffset = internal::consumeNumber(Fmt::value(), i);
+
+			multiplier = numberAndOffset.first;
+			i = numberAndOffset.second;
 			i--; // to combat the i++ in the loop			
 			continue;
 		}

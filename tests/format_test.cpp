@@ -1,9 +1,8 @@
-#include <cppystruct.h>
+#include "cppystruct.h"
+#include "constexpr_require.h"
 
 #include <catch.hpp>
 
-#define REQUIRE_STATIC(x) REQUIRE(x); \
-						  //static_assert(x, #x);
 
 TEST_CASE("Item count without format-count", "[cppystruct::format]")
 {
@@ -26,7 +25,7 @@ TEST_CASE("Item count with format-count", "[cppystruct::format]")
 
 	REQUIRE_STATIC(pystruct::countItems(PY_STRING("4s")) == 1);
 	REQUIRE_STATIC(pystruct::countItems(PY_STRING("3c4s")) == 4);
-}
+} 
 
 TEST_CASE("Item count with byte order", "[cppystruct::format]")
 {

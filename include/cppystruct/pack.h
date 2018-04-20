@@ -60,7 +60,7 @@ constexpr auto pack(std::index_sequence<Items...>, Args&&... args)
     Types t = std::make_tuple(convert<std::tuple_element_t<Items, Types>>(std::forward<Args>(args))...);
 
     constexpr size_t offsets[] = { getBinaryOffset<Items>(Fmt{})... };
-    int _[] = { packElement(output.data() + offsets[Items],  formatMode.isBigEndian(), formats[Items], std::get<Items>(t))... };
+    int _[] = { 0, packElement(output.data() + offsets[Items],  formatMode.isBigEndian(), formats[Items], std::get<Items>(t))... };
     (void)_; // _ is a dummy for pack expansion
 
     return output;
@@ -70,7 +70,8 @@ constexpr auto pack(std::index_sequence<Items...>, Args&&... args)
 template <typename Fmt, typename... Args>
 constexpr auto pack(Fmt, Args&&... args)
 {
-    return internal::pack<Fmt>(std::make_index_sequence<countItems(Fmt{})>(), std::forward<Args>(args)...);
+	constexpr size_t itemCount = countItems(Fmt{});
+	return internal::pack<Fmt>(std::make_index_sequence<itemCount>(), std::forward<Args>(args)...);
 }
 
 } // namespace pystruct

@@ -1,9 +1,7 @@
-#include <cppystruct.h>
+#include "cppystruct.h"
+#include "constexpr_require.h"
 
 #include <catch.hpp>
-
-#define REQUIRE_STATIC(x) REQUIRE(x); \
-						  static_assert(x, #x);
 
 
 template <typename F, typename S, typename F2, typename S2>

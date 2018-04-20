@@ -58,22 +58,41 @@ target_include_directories(cppystruct_tests_config INTERFACE
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/external/include/catch>
 )
 
-function(add_test_exe name)
-    add_executable(${name} ${name}.cpp main.cpp)
-    target_link_libraries(${name}
-        CPPYSTRUCT
-        cppystruct_tests_config
+# create the main executable for each test. this reduces the compile time
+# of each test by pre-compiling catch.
+add_library(test_catch STATIC main.cpp)
+target_link_libraries(test_catch
+    CPPYSTRUCT
+    cppystruct_tests_config
+)
+add_dependencies(test_catch catch)
+set_property(TARGET test_catch PROPERTY FOLDER "CPPYSTRUCT_tests")
+
+
+function(add_test_exe name constexpr)
+    set(exe_name ${name})
+
+   if (${constexpr})
+        add_definitions(-DWITH_CONSTEXPR_REQUIRE)
+        set(exe_name ${name}_constexpr)
+    else()
+        add_test_exe(${name} 1)
+    endif ()
+
+    add_executable(${exe_name} ${name}.cpp)
+    target_link_libraries(${exe_name}
+        test_catch
     )
-    add_dependencies(${name} catch)
+    add_dependencies(${exe_name} catch)
     add_test(
-      ${name}
-      ${name}
+      ${exe_name}
+      ${exe_name}
     )
     # group all tests under GSL_tests
-    set_property(TARGET ${name} PROPERTY FOLDER "CPPYSTRUCT_tests")
+    set_property(TARGET ${exe_name} PROPERTY FOLDER "CPPYSTRUCT_tests")
 endfunction()
 
-add_test_exe(string_test)
-add_test_exe(format_test)
-add_test_exe(pack_test)
-add_test_exe(unpack_test)
+add_test_exe(string_test 0)
+add_test_exe(format_test 0)
+add_test_exe(pack_test 0)
+add_test_exe(unpack_test 0)
