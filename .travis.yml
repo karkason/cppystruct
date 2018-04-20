@@ -4,11 +4,7 @@
 
 # C++ project
 language: cpp
-
-dist: trusty
-sudo: required
-group: edge
-
+script: cmake
 
 ################
 # build matrix #
@@ -16,37 +12,17 @@ group: edge
 
 matrix:
   include:
-  # Linux / GCC
-  - os: linux
-    compiler: gcc
-    env:
-      - GCC_VERSION=7
-      - CC=gcc-7
-      - CXX=g++-7
-      - CXXFLAGS=-std=c++17
-    addons:
-      apt:
-        sources: ['ubuntu-toolchain-r-test']
-        packages: ['g++-7']
-  # Linux / Clang
-  - os: linux
-    compiler: clang
-    env:
-      - COMPILER=clang++-5.0
-      - CXXFLAGS=-std=c++1z
-    addons:
-      apt:
-        sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-5.0']
-        packages: ['g++-6', 'clang-5.0', 'libc++-dev']
-  - os: linux
-    compiler: clang
-    env:
-      - COMPILER=clang++-6.0
-      - CXXFLAGS=-std=c++17
-    addons:
-      apt:
-        sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-6.0']
-        packages: ['g++-6', 'clang-6.0', 'libc++-dev']
+    - env: CLANG_VERSION=5.0 BUILD_TYPE=Release CPP=1z LIBCXX=On
+      os: linux
+      addons: *clang5
+
+    - env: GCC_VERSION=6 BUILD_TYPE=Debug CPP=1z HEADERS=On
+      os: linux
+      addons: *gcc6
+
+    - env: GCC_VERSION=6 BUILD_TYPE=Release CPP=1z
+      os: linux
+      addons: *gcc6
 
 ################
 # build script #
