@@ -53,9 +53,7 @@ matrix:
 ################
 
 script:
-
   - cmake --version
-
   # make sure CXX is correctly set
   - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
 
