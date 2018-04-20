@@ -45,11 +45,9 @@ target_compile_options(cppystruct_tests_config INTERFACE
         -Wextra
         -Wno-missing-braces
         -Wnon-virtual-dtor
-        -Wold-style-cast
         -Woverloaded-virtual
         -Wpedantic
         -Wshadow
-        -Wsign-conversion
     >
 )
 

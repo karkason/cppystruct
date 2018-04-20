@@ -1,5 +1,5 @@
 #pragma once
-#include <cppystruct/string.h>
+#include "cppystruct/string.h"
 
 #include <string_view>
 
@@ -120,7 +120,7 @@ constexpr size_t countItems(Fmt)
 
 			multiplier = numberAndOffset.first;
 			i = numberAndOffset.second;
-			i--; // to combat the i++ in the loop			
+			i--; // to combat the i++ in the loop
 			continue;
 		}
 

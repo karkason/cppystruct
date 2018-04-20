@@ -32,7 +32,7 @@ constexpr int packElement(char* data, bool bigEndian, FormatType format, RepType
 template <typename RepType, typename T>
 constexpr RepType convert(const T& val)
 {
-    // If T is char[], and RepType is string_view - constructor directly from std::size(val)
+    // If T is char[], and RepType is string_view - construct directly with std::size(val)
     //  because std::string_view doesn't have a constructor taking a char(&)[]
     if constexpr(std::is_array_v<T> && std::is_same_v<std::remove_extent_t<T>, char>
                     && std::is_same_v<RepType, std::string_view>) {
