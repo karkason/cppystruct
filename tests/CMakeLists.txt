@@ -57,7 +57,9 @@ if(CPPYSTRUCT_Coverage)
     endif()
 
     # enable profiling
-    target_compile_options(cppystruct_tests_config INTERFACE -lgcov --coverage -g -O0 -fprofile-arcs -ftest-coverage)
+    target_compile_options(cppystruct_tests_config INTERFACE --coverage -g -O0 -fprofile-arcs -ftest-coverage)
+    target_link_libraries(cppystruct_tests_config
+                          gcov)
 
     # from https://github.com/RWTH-HPC/CMake-codecov/blob/master/cmake/FindGcov.cmake
     get_filename_component(COMPILER_PATH "${CMAKE_CXX_COMPILER}" PATH)
