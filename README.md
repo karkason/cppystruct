@@ -1,28 +1,61 @@
-# cppystruct
-------
+# cppystruct [!Build Status](https://travis-ci.org/karkason/cppystruct.svg?branch=master)](https://travis-ci.org/karkason/cppystruct)
+===================================
 
+## Overview
+------------
 
-cppystruct is a C++17, header-only, constexpr clone of Python's struct module. The purpose of cppstruct is to write your struct format once, and use it seamlessly across the languages.
+cppystruct is a C++17, header-only, constexpr clone of Python's struct module.
+Write your struct format once, and use it seamlessly across C++ and Python.
 
-### Usage
+```cpp
+#include "cppystruct.h"
+
+// icmp_header can be any type that supports std::size and std::data and holds bytes
+auto [type, code, checksum, p_id, sequence] = pystruct::unpack(PY_STRING('bbHHh'), icmp_header);
+
+int leet = 1337;
+auto runtimePacked = pystruct::pack(PY_STRING(">2i10s"), leet, 20, "String!");
+// runtimePacked is an std::array filled with "\x00\x00\x059\x00\x00\x00\x10String!\x00\x00\x00"
+// The format is "compiled" and has zero overhead in runtime
+
+constexpr auto packed = pystruct::pack(PY_STRING("<2i10s"), 10, 20, "String!");
+// packed is an std::array filled with "\x00\x01\x00\x00\x10\x00\x00\x00String!\x00\x00\x00"
 
 ```
-constexpr auto packed = pystruct::pack(PY_STRING("c2h"), '*', 0x1213, 0x1415);
-// packed is an std::array filled with "*\x00\x13\x12\x15\x14"
-
-constexpr auto unpacked = pystruct::unpack(PY_STRING("c2h"), packed);
-// unpacked is a std::tuple<char, uint16_t, uint16_t>
-```
-The output of pystrcut::pack can then be used seamlessly in Python with the same format string:
-```
-import struct
-struct.unpack("c2h",'*\x00\x13\x12\x15\x14')
- ('*', 4627, 5141)
-```
 
 
-### Limitations
-- float & double are not constexpr due to no constexpr reinterpret-cast
-- A macro is used for the compile-time string because the UDL version is a gcc extension
-- Tests are not as comprehensive as desired
+## Usage
+-----------
+
+cppystruct is a C++ header-only library, you can just add cppystruct/include to your include path and be ready to go!
+
+### Run Tests
+```sh
+mkdir build && cd build
+
+# build the library & tests
+cmake ..
+cmake --build .
+
+# run the tests
+ctest .
+```
+
+
+## Features
+-----------
+
+- Full support for python's struct format, including:
+  - Byte order (little/big/network/native endian)
+  - Strings (sized strings)
+  - Repeat count for basic types
+- Full interface
+  - pack
+  - unpack
+  - calcsize
+- Constexpr format - zero overhead to actual structs
+
+#### Limitations
+- float & double formats are not constexpr due to no constexpr reinterpret-cast
+- A macro (PY_STRING) is used for the compile-time string because the UDL version is a gcc extension
 - Compile time diagnostics are not beautiful
