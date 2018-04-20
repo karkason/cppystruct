@@ -122,7 +122,7 @@ public:
 		   std::reverse(bytes, bytes + sizeof(double));
 	   }
    }
-     
+
    void store(float f) {
 	   *(float*)bytes = f;
 	   if (isBigEndian) {
@@ -193,7 +193,7 @@ public:
          v += (static_cast<uint64_t>(bytes[5]) << 40);
          v += (static_cast<uint64_t>(bytes[6]) << 48);
          v += (static_cast<uint64_t>(bytes[7]) << 56);
-      } else { 
+      } else {
          v += bytes[7];
          v += (static_cast<uint64_t>(bytes[6]) << 8);
          v += (static_cast<uint64_t>(bytes[5]) << 16);
@@ -240,7 +240,7 @@ public:
 
       return v;
    }
-     
+
    template <>
    float get() {
       float v = *(float*)bytes;
