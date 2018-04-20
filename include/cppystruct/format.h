@@ -3,7 +3,7 @@
 
 namespace pystruct {
 
-static constexpr size_t DEFAULT_ALIGNMENT = 4; 
+static constexpr size_t DEFAULT_ALIGNMENT = 4;
 
 constexpr bool isFormatMode(char formatChar)
 {
@@ -18,7 +18,7 @@ constexpr bool isFormatChar(char formatChar)
 		|| formatChar == 'h' || formatChar == 'H' || formatChar == 'i'
 		|| formatChar == 'I' || formatChar == 'l' || formatChar == 'L'
 		|| formatChar == 'q' || formatChar == 'Q' || formatChar == 'f'
-		|| formatChar == 'd' 
+		|| formatChar == 'd'
 		|| internal::isDigit(formatChar);
 }
 
@@ -43,7 +43,7 @@ SET_FORMAT_MODE('@', true, false);
 SET_FORMAT_MODE('>', false, true);
 SET_FORMAT_MODE('!', false, true);
 
-constexpr bool doesFormatAlign(size_t size) 
+constexpr bool doesFormatAlign(size_t size)
 {
 	return size > 1;
 }
@@ -76,7 +76,7 @@ SET_FORMAT_CHAR('c', 1, char);
 SET_FORMAT_CHAR('s', 1, SizedString);
 
 // Pascal strings are not supported ideologically
-//SET_FORMAT_CHAR('p', 1); 
+//SET_FORMAT_CHAR('p', 1);
 
 SET_FORMAT_CHAR('h', 2, short);
 SET_FORMAT_CHAR('H', 2, unsigned short);
@@ -91,7 +91,7 @@ SET_FORMAT_CHAR('d', 8, double);
 
 
 template <typename Fmt>
-constexpr auto getFormatMode(Fmt&&)
+constexpr auto getFormatMode(Fmt)
 {
 	// First format char is a format mode
 	if constexpr(isFormatMode(Fmt::at(0))) {
@@ -103,7 +103,7 @@ constexpr auto getFormatMode(Fmt&&)
 }
 
 template <typename Fmt>
-constexpr auto countItems(Fmt&&)
+constexpr auto countItems(Fmt)
 {
 	size_t itemCount = 0;
 
@@ -169,13 +169,13 @@ constexpr FormatType getTypeOfItem(std::index_sequence<Is...>)
 }
 
 template <size_t Item, typename Fmt>
-constexpr auto getTypeOfItem(Fmt&&)
+constexpr auto getTypeOfItem(Fmt)
 {
 	return getTypeOfItem<Item, Fmt>(std::make_index_sequence<Fmt::size()>());
 }
 
 template <typename Fmt, size_t... Items>
-constexpr size_t getBinaryOffset(Fmt&&, std::index_sequence<Items...>)
+constexpr size_t getBinaryOffset(Fmt, std::index_sequence<Items...>)
 {
 	constexpr FormatType itemTypes[] = { getTypeOfItem<Items>(Fmt{})... };
 	constexpr size_t formatSizes[] = { BigEndianFormat<itemTypes[Items].formatChar>::size()... };
@@ -193,14 +193,14 @@ constexpr size_t getBinaryOffset(Fmt&&, std::index_sequence<Items...>)
 					size += formatSizes[i + 1] - currentAlignment;
 				}
 			}
-		}	
+		}
 	}
 
 	return size;
 }
 
 template <size_t Item, typename Fmt>
-constexpr size_t getBinaryOffset(Fmt&&)
+constexpr size_t getBinaryOffset(Fmt)
 {
 	return getBinaryOffset(Fmt{}, std::make_index_sequence<Item+1>());
 }

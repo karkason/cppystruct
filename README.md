@@ -2,7 +2,7 @@
 ------
 
 
-cppystruct is a C++17, header-only, constexpr clone of Python's struct module. The purpose of cppstruct is to write your struct format once, and use it seamlessly across the languages. 
+cppystruct is a C++17, header-only, constexpr clone of Python's struct module. The purpose of cppstruct is to write your struct format once, and use it seamlessly across the languages.
 
 ### Usage
 
@@ -23,6 +23,6 @@ struct.unpack("c2h",'*\x00\x13\x12\x15\x14')
 
 ### Limitations
 - float & double are not constexpr due to no constexpr reinterpret-cast
-- A macro is used for the compile-time string because the UDL version is a gcc extension 
+- A macro is used for the compile-time string because the UDL version is a gcc extension
 - Tests are not as comprehensive as desired
 - Compile time diagnostics are not beautiful

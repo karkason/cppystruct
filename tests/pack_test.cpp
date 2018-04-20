@@ -19,7 +19,7 @@ constexpr bool operator==(const std::array<char, ArrSize>& arr, const char (&str
 			return false;
 		}
 	}
-	
+
 	return true;
 }
 
@@ -46,7 +46,7 @@ TEST_CASE("Pack string", "[cppystruct::pack]")
 
 	REQUIRE_STATIC(pystruct::pack(PY_STRING("3s"), "12345") == "123");
 	REQUIRE_STATIC(pystruct::pack(PY_STRING("6s"), "12345") == "12345\x00");
- 
+
 	REQUIRE_STATIC(pystruct::pack(PY_STRING("<2c3s2H"), 'x', 'y', "zwt  __", 0x1234, 0x5678) == "xyzwt\x34\x12\x78\x56");
 
 }

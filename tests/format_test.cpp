@@ -64,7 +64,7 @@ TEST_CASE("getTypeOfItem with item count", "[cppystruct::format]")
 	REQUIRE_STATIC(pystruct::getTypeOfItem<1>(PY_STRING("L2ci")).formatChar == 'c');
 	REQUIRE_STATIC(pystruct::getTypeOfItem<2>(PY_STRING("L2ci")).formatChar == 'c');
 	REQUIRE_STATIC(pystruct::getTypeOfItem<3>(PY_STRING("L2ci")).formatChar == 'i');
-	
+
 	REQUIRE_STATIC(pystruct::getTypeOfItem<0>(PY_STRING("c3sh")).formatChar == 'c');
 	REQUIRE_STATIC(pystruct::getTypeOfItem<1>(PY_STRING("c3sh")).formatChar == 's');
 	REQUIRE_STATIC(pystruct::getTypeOfItem<2>(PY_STRING("c3sh")).formatChar == 'h');

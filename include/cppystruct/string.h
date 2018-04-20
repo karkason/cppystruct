@@ -6,7 +6,7 @@ namespace pystruct {
 
 struct SizedString
 {
-	constexpr SizedString(const char* str, size_t sz) 
+	constexpr SizedString(const char* str, size_t sz)
 		: data(str), size(sz)
 	{};
 
@@ -20,7 +20,7 @@ struct SizedString
 };
 
 namespace internal {
-	
+
 struct format_string {
 };
 
