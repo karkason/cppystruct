@@ -11,7 +11,7 @@ namespace pystruct {
 
 template <typename T>
 struct data_view {
-	constexpr data_view(T* b, bool bigEndian) : bytes(b), isBigEndian(bigEndian) {}
+	constexpr data_view(T* b, bool bigEndian) : isBigEndian(bigEndian), bytes(b) {}
 
     size_t size = 0;
     bool isBigEndian;
@@ -26,47 +26,47 @@ constexpr void store(data_view<char>& d, char v) {
 
 constexpr void store(data_view<char>& d, uint16_t v) {
     if (!d.isBigEndian) {
-        d.bytes[0] = v & 0xFF;
-        d.bytes[1] = (v >> 8) & 0xFF;
+        d.bytes[0] = char(v & 0xFF);
+        d.bytes[1] = char((v >> 8) & 0xFF);
     } else {
-        d.bytes[1] = v & 0xFF;
-        d.bytes[0] = (v >> 8) & 0xFF;
+        d.bytes[1] = char(v & 0xFF);
+        d.bytes[0] = char((v >> 8) & 0xFF);
     }
 }
 
 constexpr void store(data_view<char>& d, uint32_t v) {
     if (!d.isBigEndian) {
-        d.bytes[0] = v & 0xFF;
-        d.bytes[1] = (v >> 8) & 0xFF;
-        d.bytes[2] = (v >> 16) & 0xFF;
-        d.bytes[3] = (v >> 24) & 0xFF;
+        d.bytes[0] = char(v & 0xFF);
+        d.bytes[1] = char((v >> 8) & 0xFF);
+        d.bytes[2] = char((v >> 16) & 0xFF);
+        d.bytes[3] = char((v >> 24) & 0xFF);
     } else {
-        d.bytes[3] = v & 0xFF;
-        d.bytes[2] = (v >> 8) & 0xFF;
-        d.bytes[1] = (v >> 16) & 0xFF;
-        d.bytes[0] = (v >> 24) & 0xFF;
+        d.bytes[3] = char(v & 0xFF);
+        d.bytes[2] = char((v >> 8) & 0xFF);
+        d.bytes[1] = char((v >> 16) & 0xFF);
+        d.bytes[0] = char((v >> 24) & 0xFF);
     }
 }
 
 constexpr void store(data_view<char>& d, uint64_t v) {
     if (!d.isBigEndian) {
-        d.bytes[0] = v & 0xFFul;
-        d.bytes[1] = (v >> 8) & 0xFFul;
-        d.bytes[2] = (v >> 16) & 0xFFul;
-        d.bytes[3] = (v >> 24) & 0xFFul;
-        d.bytes[4] = (v >> 32) & 0xFFul;
-        d.bytes[5] = (v >> 40) & 0xFFul;
-        d.bytes[6] = (v >> 48) & 0xFFul;
-        d.bytes[7] = (v >> 56) & 0xFFul;
+        d.bytes[0] = char(v & 0xFF);
+        d.bytes[1] = char((v >> 8) & 0xFF);
+        d.bytes[2] = char((v >> 16) & 0xFF);
+        d.bytes[3] = char((v >> 24) & 0xFF);
+        d.bytes[4] = char((v >> 32) & 0xFF);
+        d.bytes[5] = char((v >> 40) & 0xFF);
+        d.bytes[6] = char((v >> 48) & 0xFF);
+        d.bytes[7] = char((v >> 56) & 0xFF);
     } else {
-        d.bytes[7] = v & 0xFFul;
-        d.bytes[6] = (v >> 8) & 0xFFul;
-        d.bytes[5] = (v >> 16) & 0xFFul;
-        d.bytes[4] = (v >> 24) & 0xFFul;
-        d.bytes[3] = (v >> 32) & 0xFFul;
-        d.bytes[2] = (v >> 40) & 0xFFul;
-        d.bytes[1] = (v >> 48) & 0xFFul;
-        d.bytes[0] = (v >> 56) & 0xFFul;
+        d.bytes[7] = char(v & 0xFF);
+        d.bytes[6] = char((v >> 8) & 0xFF);
+        d.bytes[5] = char((v >> 16) & 0xFF);
+        d.bytes[4] = char((v >> 24) & 0xFF);
+        d.bytes[3] = char((v >> 32) & 0xFF);
+        d.bytes[2] = char((v >> 40) & 0xFF);
+        d.bytes[1] = char((v >> 48) & 0xFF);
+        d.bytes[0] = char((v >> 56) & 0xFF);
     }
 }
 

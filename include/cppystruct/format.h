@@ -6,8 +6,6 @@
 
 namespace pystruct {
 
-static constexpr size_t DEFAULT_ALIGNMENT = 4;
-
 constexpr bool isFormatMode(char formatChar)
 {
 	return formatChar == '<' || formatChar == '>' || formatChar == '!'
@@ -118,12 +116,9 @@ constexpr auto countItems(Fmt)
 		}
 
 		if (internal::isDigit(currentChar)) {
-			if (multiplier == 1) {
-				multiplier = currentChar - '0';
-			} else {
-				multiplier = multiplier * 10 + (currentChar - '0');
-			}
-
+            auto numberAndOffset = internal::consumeNumber(Fmt::value(), i);
+            multiplier = numberAndOffset.first;
+            i = numberAndOffset.second;
 			continue;
 		}
 

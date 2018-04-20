@@ -18,12 +18,8 @@ constexpr std::pair<size_t, size_t> consumeNumber(const char (&str)[Size], size_
 {
 	int num = 0;
 	size_t i = offset;
-	for(i = offset; isDigit(str[i]) && i < Size; i++) {
-		if(num == 0) {
-			num = str[i] - '0';
-		} else {
-			num = num*10 + (str[i] - '0');
-		}
+	for(; isDigit(str[i]) && i < Size; i++) {
+		num = num*10 + (str[i] - '0');
 	}
 
 	return {num, i};
