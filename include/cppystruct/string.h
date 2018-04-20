@@ -16,10 +16,10 @@ constexpr bool isDigit(char ch)
 template <size_t Size>
 constexpr std::pair<size_t, size_t> consumeNumber(const char (&str)[Size], size_t offset)
 {
-	int num = 0;
+	size_t num = 0;
 	size_t i = offset;
 	for(; isDigit(str[i]) && i < Size; i++) {
-		num = num*10 + (str[i] - '0');
+		num = static_cast<size_t>(num*10 + (str[i] - '0'));
 	}
 
 	return {num, i};

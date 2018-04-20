@@ -116,9 +116,8 @@ constexpr auto countItems(Fmt)
 		}
 
 		if (internal::isDigit(currentChar)) {
-            auto numberAndOffset = internal::consumeNumber(Fmt::value(), i);
-            multiplier = numberAndOffset.first;
-            i = numberAndOffset.second;
+			std::tie(multiplier, i) = internal::consumeNumber(Fmt::value(), i);
+			i--; // to combat the i++ in the loop			
 			continue;
 		}
 

@@ -58,15 +58,22 @@ target_include_directories(cppystruct_tests_config INTERFACE
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/external/include/catch>
 )
 
-file(GLOB TEST_SOURCES *.cpp)
-
-add_executable(cppystruct_tests ${TEST_SOURCES})
-target_link_libraries(cppystruct_tests
+function(add_test_exe name)
+    add_executable(${name} ${name}.cpp main.cpp)
+    target_link_libraries(${name}
         CPPYSTRUCT
         cppystruct_tests_config
     )
-add_dependencies(cppystruct_tests catch)
-add_test(
-      cppystruct_tests
-      cppystruct_tests
-)
+    add_dependencies(${name} catch)
+    add_test(
+      ${name}
+      ${name}
+    )
+    # group all tests under GSL_tests
+    set_property(TARGET ${name} PROPERTY FOLDER "CPPYSTRUCT_tests")
+endfunction()
+
+add_test_exe(string_test)
+add_test_exe(format_test)
+add_test_exe(pack_test)
+add_test_exe(unpack_test)
