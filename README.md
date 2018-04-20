@@ -1,4 +1,4 @@
-cppystruct [[!Build Status](https://travis-ci.org/karkason/cppystruct.svg?branch=master)](https://travis-ci.org/karkason/cppystruct)
+cppystruct [![Build Status](https://travis-ci.org/karkason/cppystruct.svg?branch=master)](https://travis-ci.org/karkason/cppystruct)
 ==========
 
 Overview
