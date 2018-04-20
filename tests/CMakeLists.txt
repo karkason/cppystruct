@@ -28,6 +28,8 @@ if(CPPYSTRUCT_Coverage)
         COMMAND genhtml --title "CPPyStruct" --legend --demangle-cpp --output-directory html --show-details --branch-coverage json.info.filtered.noexcept
         COMMENT "Generating HTML report test/html/index.html"
     )
+else()
+    set(CMAKE_CXX_FLAGS "")
 endif()
 
 
