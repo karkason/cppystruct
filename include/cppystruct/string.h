@@ -52,9 +52,9 @@ constexpr std::pair<size_t, size_t> consumeNumber(const T (&str)[Size], size_t o
 
 #define PY_STRING(s) [] { \
     struct S : pystruct::internal::format_string { \
-      static constexpr auto value() { return s; } \
-      static constexpr size_t size() { return std::size(s) - 1; }  \
-      static constexpr auto at(size_t i) { return s[i]; }; \
+      static constexpr decltype(auto) value() { return s; } \
+      static constexpr size_t size() { return std::size(value()) - 1; }  \
+      static constexpr auto at(size_t i) { return value()[i]; }; \
     }; \
     return S{}; \
   }()

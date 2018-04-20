@@ -28,10 +28,13 @@ constexpr auto pack(Fmt&&, Args&&... args)
 template <typename RepType>
 constexpr int packElement(char* data, bool bigEndian, FormatType format, RepType elem)
 {
+
 	if constexpr (std::is_same_v<RepType, SizedString>) {
 		// Trim the string size to the repeat count specified in the format
 		elem.size = std::min(elem.size, format.size);
-	}
+    } else {
+        (void)format; // Unreferenced if constexpr RepType != SizedString
+    }
 
 	data_view<char> view(data, bigEndian);
 	view.store(elem);
@@ -51,7 +54,9 @@ constexpr auto internal::pack(Fmt&&, std::index_sequence<Items...>, Args&&... ar
 	using Types = std::tuple<typename pystruct::BigEndianFormat<
 		formats[Items].formatChar
 	>::RepresentedType ...>;
-	Types t = std::forward_as_tuple(std::forward<Args>(args)...);
+
+    // Convert args to a tuple of the represented types
+	Types t = std::make_tuple(static_cast<std::tuple_element_t<Items, Types>>(args)...);
 
 	constexpr size_t offsets[] = { getBinaryOffset<Items>(Fmt{})... };
 	int _[] = { packElement(output.data() + offsets[Items],  formatMode.isBigEndian(), formats[Items], std::get<Items>(t))... };

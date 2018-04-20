@@ -136,24 +136,24 @@ constexpr auto countItems(Fmt&&)
 }
 
 template <size_t Item, typename Fmt, size_t CurrentItem=0, size_t CurrentI=0, size_t Multiplier=1, size_t... Is>
-constexpr auto getTypeOfItem(std::index_sequence<Is...>)
+constexpr FormatType getTypeOfItem(std::index_sequence<Is...>)
 {
-	constexpr char chars[] = { Fmt::at(Is)... };
-
-	if constexpr(CurrentI == 0 && isFormatMode(Fmt::at(0))) {
+    if constexpr (CurrentI >= Fmt::size()) {
+        return FormatType{ 0, 0 };
+    } else if constexpr (CurrentI == 0 && isFormatMode(Fmt::at(0))) {
+        // If the first char is a format-mode, skip it
 		return getTypeOfItem<Item, Fmt, CurrentItem, CurrentI+1>(std::index_sequence<Is...>{});
-	}
-
-	if constexpr (CurrentI < Fmt::size() && internal::isDigit(Fmt::at(CurrentI))) {
+	} else if constexpr (internal::isDigit(Fmt::at(CurrentI))) {
+        // If the current char is a digit, consume the number, skip it and pass it as a multiplier
+        constexpr char chars[] = { Fmt::at(Is)... };
 		constexpr auto numberAndIndex = internal::consumeNumber(chars, CurrentI);
 		return getTypeOfItem<Item, Fmt, CurrentItem, numberAndIndex.second, numberAndIndex.first>(std::index_sequence<Is...>{});
-	}
-
-	if constexpr(CurrentI < Fmt::size()) {
+	} else {
+        // If the current char is a format char, parse it
 		constexpr char currentChar = Fmt::at(CurrentI);
 		if constexpr (((currentChar != 's') && (Item >= CurrentItem) && (Item < (CurrentItem + Multiplier)))
 			|| ((currentChar == 's') && (Item == CurrentItem))) {
-			if (currentChar != 's') {
+			if constexpr (currentChar != 's') {
 				return FormatType{ BigEndianFormat<currentChar>::size(), currentChar };
 			} else {
 				return FormatType{ Multiplier, currentChar };
@@ -165,8 +165,6 @@ constexpr auto getTypeOfItem(std::index_sequence<Is...>)
 				return getTypeOfItem<Item, Fmt, CurrentItem + 1, CurrentI + 1>(std::index_sequence<Is...>{});
 			}
 		}
-	} else {
-		return FormatType{0, 0};
 	}
 }
 
