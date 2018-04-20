@@ -39,7 +39,6 @@ target_compile_options(cppystruct_tests_config INTERFACE
         -fno-strict-aliasing
         -Wall
         -Wcast-align
-        -Wconversion
         -Wctor-dtor-privacy
         -Werror
         -Wextra
@@ -65,6 +64,10 @@ target_link_libraries(test_catch
 )
 add_dependencies(test_catch catch)
 set_property(TARGET test_catch PROPERTY FOLDER "CPPYSTRUCT_tests")
+
+# Workaround for an issue while compiling catch
+add_definitions(-DCATCH_INTERNAL_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS)
+add_definitions(-DCATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS)
 
 
 function(add_test_exe name constexpr)

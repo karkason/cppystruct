@@ -18,15 +18,16 @@ matrix:
   include:
   # Linux / GCC
   - os: linux
-    compiler: gcc
-    env:
-      - COMPILER=g++-7
-      - CXXFLAGS=-std=c++17
-    addons:
-      apt:
-        sources: ['ubuntu-toolchain-r-test']
-        packages: ['g++-7']
-
+      compiler: gcc
+      env:
+        - GCC_VERSION=7
+        - CC=gcc-7
+        - CXX=g++-7
+        - CXXFLAGS=-std=c++17
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-7']
   # Linux / Clang
   - os: linux
     compiler: clang
@@ -52,6 +53,8 @@ matrix:
 ################
 
 script:
+
+  - cmake --version
 
   # make sure CXX is correctly set
   - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
