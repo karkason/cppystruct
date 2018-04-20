@@ -48,7 +48,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
 
-   - env: COMPILER=g++-7 BUILD_TYPE=Release
+    - env: COMPILER=g++-7 BUILD_TYPE=Release
       addons: *gcc7
 
 
