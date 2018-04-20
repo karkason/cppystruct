@@ -1,10 +1,13 @@
-cppystruct [![Build Status](https://travis-ci.org/karkason/cppystruct.svg?branch=master)](https://travis-ci.org/karkason/cppystruct)
+`cppystruct`
 ==========
+[![Build Status](https://travis-ci.org/karkason/cppystruct.svg?branch=master)](https://travis-ci.org/karkason/cppystruct)
+
+Use your Python `struct.(un)pack` formats in C++!
 
 Overview
 --------
 
-cppystruct is a C++17, header-only, constexpr clone of Python's struct module.
+`cppystruct` is a C++17, header-only, constexpr clone of Python's struct module.
 Write your struct format once, and use it seamlessly across C++ and Python.
 
 ```cpp
@@ -27,9 +30,9 @@ constexpr auto packed = pystruct::pack(PY_STRING("<2i10s"), 10, 20, "String!");
 Usage
 -----
 
-cppystruct is a C++ header-only library, you can just add cppystruct/include to your include path and be ready to go!
+cppystruct is a C++ header-only library, you can just add `cppystruct/include` to your include path and be ready to go!
 
-### Run Tests
+#### Run Tests
 ```sh
 mkdir build && cd build
 
@@ -59,3 +62,10 @@ Features
 - float & double formats are not constexpr due to no constexpr reinterpret-cast
 - A macro (PY_STRING) is used for the compile-time string because the UDL version is a gcc extension
 - Compile time diagnostics are not beautiful
+
+Contributing
+------------
+
+`cppystruct` is developed on GitHub at [karkason/cppystruct](https://github.com/karkason/cppystruct).
+To report an issue or send a pull request, use the
+[issue tracker](https://github.com/karkason/cppystruct/issues).
