@@ -1,27 +1,10 @@
 #include "cppystruct.h"
 #include "constexpr_require.h"
+#include "constexpr_compare.h"
 
 #include <catch.hpp>
 
 using namespace std::string_view_literals;
-
-
-template <size_t ArrSize>
-constexpr bool operator==(const std::array<char, ArrSize>& arr, std::string_view str)
-{
-    // Assumming that str is a string literal
-	if (ArrSize != str.size()) {
-		return false;
-	}
-
-	for(size_t i = 0; i < ArrSize; i++) {
-		if(arr[i] != str[i]) {
-			return false;
-		}
-	}
-
-	return true;
-}
 
 TEST_CASE("Pack sanity", "[cppystruct::pack]")
 {

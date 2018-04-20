@@ -1,5 +1,6 @@
 #include "cppystruct.h"
 #include "constexpr_require.h"
+#include "constexpr_compare.h"
 
 #include <catch.hpp>
 

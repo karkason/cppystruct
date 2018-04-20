@@ -54,13 +54,6 @@ target_include_directories(cppystruct_tests_config INTERFACE
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/external/include/catch>
 )
 
-# Workaround for an issue while compiling catch
-target_link_libraries(cppystruct_tests_config
-                      INTERFACE -DCATCH_INTERNAL_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS)
-target_link_libraries(cppystruct_tests_config
-                      INTERFACE -DCATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS)
-
-
 # create the main executable for each test. this reduces the compile time
 # of each test by pre-compiling catch.
 add_library(test_catch STATIC main.cpp)
