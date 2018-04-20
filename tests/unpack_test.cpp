@@ -5,6 +5,7 @@
 
 using namespace std::string_view_literals;
 
+
 TEST_CASE("unpack sanity", "[cppystruct::unpack]")
 {
 	REQUIRE_STATIC(pystruct::unpack(PY_STRING("5s"), "12345") == std::make_tuple("12345"sv));
