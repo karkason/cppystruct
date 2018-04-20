@@ -94,13 +94,11 @@ install:
       export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${LLVM_INSTALL}/lib"
     fi
 
-before_script:
-  # have CMake to generate build files
+script:
   - cmake --version
   - cd "${TRAVIS_BUILD_DIR}"
   - mkdir -p build && cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+  - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE ${CMAKE_OPTIONS}
 
-script:
   - cmake --build . -- -j${JOBS}
   - ctest --output-on-failure -j${JOBS}
