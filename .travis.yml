@@ -50,7 +50,7 @@ matrix:
       before_script:
         - pip install --user cpp-coveralls
       after_success:
-        - coveralls --verbose -E /usr/include.* -e build/external -e build/internal -e tests --gcov-options '\-lp'
+        - coveralls --verbose -E /usr/include.* -e build/catch -e build/external -e build/internal -e tests --gcov-options '\-lp'
 
 
 ################
