@@ -164,11 +164,11 @@ template <>
 constexpr uint16_t get(const data_view<const char>& d) {
     uint16_t v = 0;
     if (!d.isBigEndian) {
-        v += static_cast<uint16_t>((d.bytes[0] & 0xFF));
-        v += static_cast<uint16_t>((d.bytes[1] & 0xFF) << 8);
+        v += static_cast<uint16_t>(static_cast<uint8_t>(d.bytes[0] & 0xFF));
+        v += static_cast<uint16_t>(static_cast<uint8_t>(d.bytes[1] & 0xFF) << 8);
     } else {
-        v += static_cast<uint16_t>((d.bytes[1] & 0xFF));
-        v += static_cast<uint16_t>((d.bytes[0] & 0xFF) << 8);
+        v += static_cast<uint16_t>(static_cast<uint8_t>(d.bytes[1] & 0xFF));
+        v += static_cast<uint16_t>(static_cast<uint8_t>(d.bytes[0] & 0xFF) << 8);
     }
 
     return v;
@@ -178,15 +178,15 @@ template <>
 constexpr uint32_t get(const data_view<const char>& d) {
     uint32_t v = 0;
     if (!d.isBigEndian) {
-        v += static_cast<uint32_t>((d.bytes[0] & 0xFF));
-        v += static_cast<uint32_t>((d.bytes[1] & 0xFF) << 8);
-        v += static_cast<uint32_t>((d.bytes[2] & 0xFF) << 16);
-        v += static_cast<uint32_t>((d.bytes[3] & 0xFF) << 24);
+        v += static_cast<uint32_t>(static_cast<uint8_t>(d.bytes[0] & 0xFF));
+        v += static_cast<uint32_t>(static_cast<uint8_t>(d.bytes[1] & 0xFF) << 8);
+        v += static_cast<uint32_t>(static_cast<uint8_t>(d.bytes[2] & 0xFF) << 16);
+        v += static_cast<uint32_t>(static_cast<uint8_t>(d.bytes[3] & 0xFF) << 24);
     } else {
-        v += static_cast<uint32_t>((d.bytes[3] & 0xFF));
-        v += static_cast<uint32_t>((d.bytes[2] & 0xFF) << 8);
-        v += static_cast<uint32_t>((d.bytes[1] & 0xFF) << 16);
-        v += static_cast<uint32_t>((d.bytes[0] & 0xFF) << 24);
+        v += static_cast<uint32_t>(static_cast<uint8_t>(d.bytes[3] & 0xFF));
+        v += static_cast<uint32_t>(static_cast<uint8_t>(d.bytes[2] & 0xFF) << 8);
+        v += static_cast<uint32_t>(static_cast<uint8_t>(d.bytes[1] & 0xFF) << 16);
+        v += static_cast<uint32_t>(static_cast<uint8_t>(d.bytes[0] & 0xFF) << 24);
     }
 
     return v;
@@ -196,23 +196,23 @@ template <>
 constexpr uint64_t get(const data_view<const char>& d) {
     uint64_t v = 0;
     if (!d.isBigEndian) {
-        v += static_cast<uint64_t>((d.bytes[0] & 0xFFULL));
-        v += static_cast<uint64_t>((d.bytes[1] & 0xFFULL) << 8);
-        v += static_cast<uint64_t>((d.bytes[2] & 0xFFULL) << 16);
-        v += static_cast<uint64_t>((d.bytes[3] & 0xFFULL) << 24);
-        v += static_cast<uint64_t>((d.bytes[4] & 0xFFULL) << 32);
-        v += static_cast<uint64_t>((d.bytes[5] & 0xFFULL) << 40);
-        v += static_cast<uint64_t>((d.bytes[6] & 0xFFULL) << 48);
-        v += static_cast<uint64_t>((d.bytes[7] & 0xFFULL) << 56);
-    } else {
-        v += static_cast<uint64_t>((d.bytes[7] & 0xFFULL));
-        v += static_cast<uint64_t>((d.bytes[6] & 0xFFULL) << 8);
-        v += static_cast<uint64_t>((d.bytes[5] & 0xFFULL) << 16);
-        v += static_cast<uint64_t>((d.bytes[4] & 0xFFULL) << 24);
-        v += static_cast<uint64_t>((d.bytes[3] & 0xFFULL) << 32);
-        v += static_cast<uint64_t>((d.bytes[2] & 0xFFULL) << 40);
-        v += static_cast<uint64_t>((d.bytes[1] & 0xFFULL) << 48);
-        v += static_cast<uint64_t>((d.bytes[0] & 0xFFULL) << 56);
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[0] & 0xFF));
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[1] & 0xFF) << 8ULL);
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[2] & 0xFF) << 16ULL);
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[3] & 0xFF) << 24ULL);
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[4] & 0xFF) << 32ULL);
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[5] & 0xFF) << 40ULL);
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[6] & 0xFF) << 48ULL);
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[7] & 0xFF) << 56ULL);
+    } else {																
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[7] & 0xFF));	
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[6] & 0xFF) << 8ULL);
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[5] & 0xFF) << 16ULL);
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[4] & 0xFF) << 24ULL);
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[3] & 0xFF) << 32ULL);
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[2] & 0xFF) << 40ULL);
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[1] & 0xFF) << 48ULL);
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[0] & 0xFF) << 56ULL);
     }
 
     return v;
