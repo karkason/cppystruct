@@ -26,10 +26,10 @@ TEST_CASE("pack sanity", "[cppystruct::pack]")
 
 TEST_CASE("pack unsigned ints", "[cppystruct::pack]")
 {
-    REQUIRE_STATIC(pystruct::pack(PY_STRING("BHILQ"), 254, 65534, 4294967294, 4294967294, 18446744073709551614) == "\xfe\x00\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\x00\x00\x00\x00\xfe\xff\xff\xff\xff\xff\xff\xff"sv);
-    REQUIRE_STATIC(pystruct::pack(PY_STRING(">BHILQ"), 254, 65534, 4294967294, 4294967294, 18446744073709551614) == "\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff\xfe"sv);
-    REQUIRE_STATIC(pystruct::pack(PY_STRING("!BHILQ"), 254, 65534, 4294967294, 4294967294, 18446744073709551614) == "\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff\xfe"sv);
-    REQUIRE_STATIC(pystruct::pack(PY_STRING("<BHILQ"), 254, 65534, 4294967294, 4294967294, 18446744073709551614) == "\xfe\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff"sv);
+    REQUIRE_STATIC(pystruct::pack(PY_STRING("BHILQ"), 254, 65534, 4294967294UL, 4294967294UL, 18446744073709551614ULL) == "\xfe\x00\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\x00\x00\x00\x00\xfe\xff\xff\xff\xff\xff\xff\xff"sv);
+    REQUIRE_STATIC(pystruct::pack(PY_STRING(">BHILQ"), 254, 65534, 4294967294UL, 4294967294UL, 18446744073709551614ULL) == "\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff\xfe"sv);
+    REQUIRE_STATIC(pystruct::pack(PY_STRING("!BHILQ"), 254, 65534, 4294967294UL, 4294967294UL, 18446744073709551614ULL) == "\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff\xfe"sv);
+    REQUIRE_STATIC(pystruct::pack(PY_STRING("<BHILQ"), 254, 65534, 4294967294UL, 4294967294UL, 18446744073709551614ULL) == "\xfe\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff"sv);
 }
 
 

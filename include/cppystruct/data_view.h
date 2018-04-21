@@ -124,7 +124,7 @@ constexpr void store(data_view<char>& d, int64_t v) {
     if (v > 0) {
         b = v;
     } else {
-        b = 0xFFFFFFFFFFFFFFFF + static_cast<uint64_t>(v) + 1ull;
+        b = 0xFFFFFFFFFFFFFFFFULL + static_cast<uint64_t>(v) + 1ull;
     }
 
     store(d, b);

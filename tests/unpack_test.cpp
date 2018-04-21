@@ -29,10 +29,10 @@ TEST_CASE("unpack floating points", "[cppystruct::unpack]")
 
 TEST_CASE("unpack unsigned ints", "[cppystruct::pack]")
 {
-    REQUIRE_STATIC(pystruct::unpack(PY_STRING("BHILQ"), "\xfe\x00\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\x00\x00\x00\x00\xfe\xff\xff\xff\xff\xff\xff\xff"sv) == std::make_tuple(254, 65534, 4294967294, 4294967294, 18446744073709551614));
-    REQUIRE_STATIC(pystruct::unpack(PY_STRING(">BHILQ"), "\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff\xfe"sv) == std::make_tuple(254, 65534, 4294967294, 4294967294, 18446744073709551614));
-    REQUIRE_STATIC(pystruct::unpack(PY_STRING("!BHILQ"), "\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff\xfe"sv) == std::make_tuple(254, 65534, 4294967294, 4294967294, 18446744073709551614));
-    REQUIRE_STATIC(pystruct::unpack(PY_STRING("<BHILQ"), "\xfe\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff"sv) == std::make_tuple(254, 65534, 4294967294, 4294967294, 18446744073709551614));
+    REQUIRE_STATIC(pystruct::unpack(PY_STRING("BHILQ"), "\xfe\x00\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\x00\x00\x00\x00\xfe\xff\xff\xff\xff\xff\xff\xff"sv) == std::make_tuple(254, 65534, 4294967294UL, 4294967294UL, 18446744073709551614ULL));
+    REQUIRE_STATIC(pystruct::unpack(PY_STRING(">BHILQ"), "\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff\xfe"sv) == std::make_tuple(254, 65534, 4294967294, 4294967294UL, 18446744073709551614ULL));
+    REQUIRE_STATIC(pystruct::unpack(PY_STRING("!BHILQ"), "\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff\xfe"sv) == std::make_tuple(254, 65534, 4294967294, 4294967294UL, 18446744073709551614ULL));
+    REQUIRE_STATIC(pystruct::unpack(PY_STRING("<BHILQ"), "\xfe\xfe\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff"sv) == std::make_tuple(254, 65534, 4294967294, 4294967294UL, 18446744073709551614ULL));
 }
 
 TEST_CASE("unpack signed ints", "[cppystruct::unpack]")
