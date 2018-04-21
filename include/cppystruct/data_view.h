@@ -156,19 +156,19 @@ template <typename T>
 constexpr T get(const data_view<const char>& d);
 
 template <>
-constexpr char get(const data_view<const char>& d) {
-    return d.bytes[0];
+constexpr unsigned char get(const data_view<const char>& d) {
+    return static_cast<unsigned char>(d.bytes[0] & '\xFF');
 }
 
 template <>
 constexpr uint16_t get(const data_view<const char>& d) {
     uint16_t v = 0;
     if (!d.isBigEndian) {
-        v += d.bytes[0];
-        v += (static_cast<uint16_t>(d.bytes[1]) << 8);
+        v += static_cast<uint16_t>((d.bytes[0] & 0xFF));
+        v += static_cast<uint16_t>((d.bytes[1] & 0xFF) << 8);
     } else {
-        v += d.bytes[1];
-        v += (static_cast<uint16_t>(d.bytes[0]) << 8);
+        v += static_cast<uint16_t>((d.bytes[1] & 0xFF));
+        v += static_cast<uint16_t>((d.bytes[0] & 0xFF) << 8);
     }
 
     return v;
@@ -178,15 +178,15 @@ template <>
 constexpr uint32_t get(const data_view<const char>& d) {
     uint32_t v = 0;
     if (!d.isBigEndian) {
-        v += d.bytes[0];
-        v += (static_cast<uint32_t>(d.bytes[1]) << 8);
-        v += (static_cast<uint32_t>(d.bytes[2]) << 16);
-        v += (static_cast<uint32_t>(d.bytes[3]) << 24);
+        v += static_cast<uint32_t>((d.bytes[0] & 0xFF));
+        v += static_cast<uint32_t>((d.bytes[1] & 0xFF) << 8);
+        v += static_cast<uint32_t>((d.bytes[2] & 0xFF) << 16);
+        v += static_cast<uint32_t>((d.bytes[3] & 0xFF) << 24);
     } else {
-        v += d.bytes[3];
-        v += (static_cast<uint32_t>(d.bytes[2]) << 8);
-        v += (static_cast<uint32_t>(d.bytes[1]) << 16);
-        v += (static_cast<uint32_t>(d.bytes[0]) << 24);
+        v += static_cast<uint32_t>((d.bytes[3] & 0xFF));
+        v += static_cast<uint32_t>((d.bytes[2] & 0xFF) << 8);
+        v += static_cast<uint32_t>((d.bytes[1] & 0xFF) << 16);
+        v += static_cast<uint32_t>((d.bytes[0] & 0xFF) << 24);
     }
 
     return v;
@@ -196,32 +196,41 @@ template <>
 constexpr uint64_t get(const data_view<const char>& d) {
     uint64_t v = 0;
     if (!d.isBigEndian) {
-        v += d.bytes[0];
-        v += (static_cast<uint64_t>(d.bytes[1]) << 8);
-        v += (static_cast<uint64_t>(d.bytes[2]) << 16);
-        v += (static_cast<uint64_t>(d.bytes[3]) << 24);
-        v += (static_cast<uint64_t>(d.bytes[4]) << 32);
-        v += (static_cast<uint64_t>(d.bytes[5]) << 40);
-        v += (static_cast<uint64_t>(d.bytes[6]) << 48);
-        v += (static_cast<uint64_t>(d.bytes[7]) << 56);
+        v += static_cast<uint64_t>((d.bytes[0] & 0xFFULL));
+        v += static_cast<uint64_t>((d.bytes[1] & 0xFFULL) << 8);
+        v += static_cast<uint64_t>((d.bytes[2] & 0xFFULL) << 16);
+        v += static_cast<uint64_t>((d.bytes[3] & 0xFFULL) << 24);
+        v += static_cast<uint64_t>((d.bytes[4] & 0xFFULL) << 32);
+        v += static_cast<uint64_t>((d.bytes[5] & 0xFFULL) << 40);
+        v += static_cast<uint64_t>((d.bytes[6] & 0xFFULL) << 48);
+        v += static_cast<uint64_t>((d.bytes[7] & 0xFFULL) << 56);
     } else {
-       v += d.bytes[7];
-       v += (static_cast<uint64_t>(d.bytes[6]) << 8);
-       v += (static_cast<uint64_t>(d.bytes[5]) << 16);
-       v += (static_cast<uint64_t>(d.bytes[4]) << 24);
-       v += (static_cast<uint64_t>(d.bytes[3]) << 32);
-       v += (static_cast<uint64_t>(d.bytes[2]) << 40);
-       v += (static_cast<uint64_t>(d.bytes[1]) << 48);
-       v += (static_cast<uint64_t>(d.bytes[0]) << 56);
+        v += static_cast<uint64_t>((d.bytes[7] & 0xFFULL));
+        v += static_cast<uint64_t>((d.bytes[6] & 0xFFULL) << 8);
+        v += static_cast<uint64_t>((d.bytes[5] & 0xFFULL) << 16);
+        v += static_cast<uint64_t>((d.bytes[4] & 0xFFULL) << 24);
+        v += static_cast<uint64_t>((d.bytes[3] & 0xFFULL) << 32);
+        v += static_cast<uint64_t>((d.bytes[2] & 0xFFULL) << 40);
+        v += static_cast<uint64_t>((d.bytes[1] & 0xFFULL) << 48);
+        v += static_cast<uint64_t>((d.bytes[0] & 0xFFULL) << 56);
     }
 
     return v;
 }
 
 template <>
-constexpr int8_t get(const data_view<const char>& d) {
-    uint8_t b = get<char>(d);
+constexpr signed char get(const data_view<const char>& d) {
+    uint8_t b = get<unsigned char>(d);
     return static_cast<int8_t>(b - 0xFFULL - 1);
+}
+
+template <>
+constexpr char get(const data_view<const char>& d) {
+    if constexpr (std::is_signed_v<char>) {
+        return static_cast<char>(get<signed char>(d));
+    } else {
+        return static_cast<char>(get<unsigned char>(d));
+    }
 }
 
 template <>

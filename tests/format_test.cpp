@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 
-TEST_CASE("Item count without format-count", "[cppystruct::format]")
+TEST_CASE("item count without format-count", "[cppystruct::format]")
 {
     REQUIRE_STATIC(pystruct::countItems(PY_STRING("c")) == 1);
     REQUIRE_STATIC(pystruct::countItems(PY_STRING("cc")) == 2);
@@ -15,7 +15,7 @@ TEST_CASE("Item count without format-count", "[cppystruct::format]")
     REQUIRE_STATIC(pystruct::countItems(PY_STRING("cchHis")) == 6);
 }
 
-TEST_CASE("Item count with format-count", "[cppystruct::format]")
+TEST_CASE("item count with format-count", "[cppystruct::format]")
 {
     REQUIRE_STATIC(pystruct::countItems(PY_STRING("4c")) == 4);
     REQUIRE_STATIC(pystruct::countItems(PY_STRING("40c")) == 40);
@@ -27,7 +27,7 @@ TEST_CASE("Item count with format-count", "[cppystruct::format]")
     REQUIRE_STATIC(pystruct::countItems(PY_STRING("3c4s")) == 4);
 }
 
-TEST_CASE("Item count with byte order", "[cppystruct::format]")
+TEST_CASE("item count with byte order", "[cppystruct::format]")
 {
     REQUIRE_STATIC(pystruct::countItems(PY_STRING("!ci")) == 2);
     REQUIRE_STATIC(pystruct::countItems(PY_STRING(">ci")) == 2);
