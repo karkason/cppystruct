@@ -29,6 +29,7 @@ Usage
 -----
 
 cppystruct is a C++ header-only library, you can just add `cppystruct/include` to your include path and be ready to go!
+The library compiles cleanly on clang, GCC & MSVC. CI is set up for clang & MSVC. 
 
 #### Run Tests
 ```sh
