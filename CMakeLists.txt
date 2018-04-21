@@ -29,9 +29,11 @@ target_compile_features(CPPYSTRUCT INTERFACE cxx_std_17)
 # on *nix systems force the use of -std=c++XX instead of -std=gnu++XX (default)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+ set(CPPYSTRUCT_INCLUDE_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/")
+
 # add include folders to the library and targets that consume it
 target_include_directories(CPPYSTRUCT INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CPPYSTRUCT_INCLUDE_BUILD_DIR}
 )
 
 install(

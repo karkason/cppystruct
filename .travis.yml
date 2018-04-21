@@ -17,7 +17,7 @@ matrix:
   include:
     # Clang 5.0
     - env: COMPILER=clang++-5.0 BUILD_TYPE=Debug
-      addons: &clang40
+      addons: &clang50
         apt:
           packages:
             - clang-5.0
@@ -29,18 +29,33 @@ matrix:
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
     - env: COMPILER=clang++-5.0 BUILD_TYPE=Release
-      addons: *clang40
+      addons: *clang50
 
     # GCC 7
     - env: COMPILER=g++-7 BUILD_TYPE=Debug
       addons: &gcc7
         apt:
-          packages: g++-7
+          packages:
+            - g++-7
           sources:
             - ubuntu-toolchain-r-test
 
     - env: COMPILER=g++-7 BUILD_TYPE=Release
       addons: *gcc7
+
+    # Coveralls (http://gronlier.fr/blog/2015/01/adding-code-coverage-to-your-c-project/)
+    - env: COMPILER=g++-7 BUILD_TYPE=Release CMAKE_OPTIONS=-DCPPYSTRUCT_Coverage=ON
+      addons: &gcc7_coveralls
+        apt:
+          packages:
+            - g++-7
+            - lcov
+          sources:
+            - ubuntu-toolchain-r-test
+      before_script:
+        - pip install --user cpp-coveralls
+      after_success:
+        - coveralls --verbose -E /usr/include.* -e build/catch -e build/external -e build/internal -e tests --gcov-options '\-lp'
 
 
 ################
@@ -86,13 +101,12 @@ install:
       export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${LLVM_INSTALL}/lib"
     fi
 
-before_script:
-  # have CMake to generate build files
+script:
   - cmake --version
   - cd "${TRAVIS_BUILD_DIR}"
   - mkdir -p build && cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+  - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE ${CMAKE_OPTIONS}
 
-script:
   - cmake --build . -- -j${JOBS}
   - ctest --output-on-failure -j${JOBS}
+  - cd ..

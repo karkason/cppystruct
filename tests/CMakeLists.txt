@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
-
 project(CppystructTests CXX)
+
+option(CPPYSTRUCT_Coverage "Build test suite with coverage information" OFF)
 
 # will make visual studio generated project group files
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -48,6 +49,29 @@ target_compile_options(cppystruct_tests_config INTERFACE
         -Wshadow
     >
 )
+
+if(CPPYSTRUCT_Coverage)
+    message(STATUS "Building test suite with coverage information")
+    if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        message(FATAL_ERROR "CPPYSTRUCT_Coverage requires GCC.")
+    endif()
+
+    # enable profiling
+    target_compile_options(cppystruct_tests_config INTERFACE -lgcov --coverage -g -O0 -fprofile-arcs -ftest-coverage -fno-inline -fno-inline-small-functions -fno-default-inline)
+    target_link_libraries(cppystruct_tests_config
+                          INTERFACE gcov)
+
+    # from https://github.com/RWTH-HPC/CMake-codecov/blob/master/cmake/FindGcov.cmake
+    get_filename_component(COMPILER_PATH "${CMAKE_CXX_COMPILER}" PATH)
+    string(REGEX MATCH "^[0-9]+" GCC_VERSION "${CMAKE_CXX_COMPILER_VERSION}")
+    find_program(GCOV_BIN NAMES gcov-${GCC_VERSION} gcov HINTS ${COMPILER_PATH})
+
+    # collect all source files from the chosen include dir
+    file(GLOB_RECURSE SOURCE_FILES ${CPPYSTRUCT_INCLUDE_BUILD_DIR}*.h)
+
+    message(STATUS "Gcov bin is: ${GCOV_BIN}")
+
+endif()
 
 # for tests to find the catch header
 target_include_directories(cppystruct_tests_config INTERFACE
