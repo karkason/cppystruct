@@ -58,3 +58,14 @@ TEST_CASE("pack string", "[cppystruct::pack]")
     // Something complex with mixed types and repeat counts
     REQUIRE_STATIC(pystruct::pack(PY_STRING("<2c3s2H"), 'x', 'y', "zwt  __", 0x1234, 0x5678) == "xyzwt\x34\x12\x78\x56"sv);
 }
+
+TEST_CASE("pack bools", "[cppystruct::pack]")
+{
+    REQUIRE_STATIC(pystruct::pack(PY_STRING("?"), true) == "\x01"sv);
+    REQUIRE_STATIC(pystruct::pack(PY_STRING("?"), false) == "\x00"sv);
+
+    // Non-zero == true
+    for(size_t i = 1; i < 10000; i++) {
+        REQUIRE(pystruct::pack(PY_STRING("?"), i) == "\x01"sv);
+    }
+}
