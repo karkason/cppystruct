@@ -25,6 +25,7 @@ constexpr int packElement(char* data, bool bigEndian, FormatType format, RepType
     }
 
     data_view<char> view(data, bigEndian);
+
     data::store(view, elem);
     return 0;
 }
@@ -70,8 +71,8 @@ constexpr auto pack(std::index_sequence<Items...>, Args&&... args)
 template <typename Fmt, typename... Args>
 constexpr auto pack(Fmt, Args&&... args)
 {
-	constexpr size_t itemCount = countItems(Fmt{});
-	return internal::pack<Fmt>(std::make_index_sequence<itemCount>(), std::forward<Args>(args)...);
+    constexpr size_t itemCount = countItems(Fmt{});
+    return internal::pack<Fmt>(std::make_index_sequence<itemCount>(), std::forward<Args>(args)...);
 }
 
 } // namespace pystruct

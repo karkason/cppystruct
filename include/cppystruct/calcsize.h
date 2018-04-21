@@ -15,9 +15,9 @@ constexpr size_t calcsize(Fmt formatString);
 template <typename Fmt>
 constexpr size_t calcsize(Fmt)
 {
-	constexpr auto numItems = countItems(Fmt{});
-	return getBinaryOffset<numItems - 1>(Fmt{})
-		+ getTypeOfItem<numItems - 1>(Fmt{}).size;
+    constexpr auto numItems = countItems(Fmt{});
+    return getBinaryOffset<numItems - 1>(Fmt{})
+        + getTypeOfItem<numItems - 1>(Fmt{}).size;
 }
 
 } // namespace pystruct

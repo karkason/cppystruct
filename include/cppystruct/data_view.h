@@ -11,17 +11,17 @@ namespace pystruct {
 
 template <typename T>
 struct data_view {
-	constexpr data_view(T* b, bool bigEndian) : isBigEndian(bigEndian), bytes(b) {}
+    constexpr data_view(T* b, bool bigEndian) : isBigEndian(bigEndian), bytes(b) {}
 
     size_t size = 0;
     bool isBigEndian;
-	T* bytes;
+    T* bytes;
 };
 
 namespace data {
 // Store
-constexpr void store(data_view<char>& d, char v) {
-    d.bytes[0] = v;
+constexpr void store(data_view<char>& d, unsigned char v) {
+    d.bytes[0] = char(v & 0xFF);
 }
 
 constexpr void store(data_view<char>& d, uint16_t v) {
@@ -70,8 +70,8 @@ constexpr void store(data_view<char>& d, uint64_t v) {
     }
 }
 
-constexpr void store(data_view<char>& d, int8_t v) {
-    char b = 0;
+constexpr void store(data_view<char>& d, signed char v) {
+    uint8_t b = 0;
 
     if (v > 0) {
         b = v;
@@ -80,6 +80,14 @@ constexpr void store(data_view<char>& d, int8_t v) {
     }
 
     store(d, b);
+}
+
+constexpr void store(data_view<char>& d, char v) {
+    if constexpr (std::is_unsigned_v<char>) {
+        store(d, static_cast<uint8_t>(v));
+    } else {
+        store(d, static_cast<int8_t>(v));
+    }
 }
 
 constexpr void store(data_view<char>& d, int16_t v) {
@@ -100,19 +108,23 @@ constexpr void store(data_view<char>& d, int32_t v) {
     if (v > 0) {
         b = v;
     } else {
-        b = 0xFFFFFFFF + v + 1;
+        b = static_cast<uint32_t>(0xFFFFFFFFULL + static_cast<uint32_t>(v) + 1ull);
     }
 
     store(d, b);
 }
 
+
+#ifdef _MSC_VER
+#pragma warning(disable : 4307) // Integral constant overflow warning, but it is well defined for unsigned integers...
+#endif
 constexpr void store(data_view<char>& d, int64_t v) {
     uint64_t b = 0;
 
     if (v > 0) {
         b = v;
     } else {
-        b = 0xFFFFFFFFFFFFFFFFUL + v + 1;
+        b = 0xFFFFFFFFFFFFFFFF + static_cast<uint64_t>(v) + 1ull;
     }
 
     store(d, b);
