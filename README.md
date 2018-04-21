@@ -1,6 +1,6 @@
 `cppystruct`
 ==========
-[![Build Status](https://travis-ci.org/karkason/cppystruct.svg?branch=master)](https://travis-ci.org/karkason/cppystruct)
+[![Build Status](https://travis-ci.org/karkason/cppystruct.svg?branch=master)](https://travis-ci.org/karkason/cppystruct) [![Coverage Status](https://coveralls.io/repos/github/karkason/cppystruct/badge.svg?branch=master)](https://coveralls.io/github/karkason/cppystruct?branch=master)
 
 Overview
 --------
