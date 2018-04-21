@@ -5,7 +5,7 @@
 Overview
 --------
 
-`cppystruct` is a C++17, header-only, constexpr clone of Python's struct module.
+`cppystruct` is a C++17, header-only, constexpr clone of [Python's struct module](https://docs.python.org/2/library/struct.html).
 Write your struct format once, and use it seamlessly across C++ and Python.
 
 ```cpp
@@ -29,7 +29,7 @@ Usage
 -----
 
 cppystruct is a C++ header-only library, you can just add `cppystruct/include` to your include path and be ready to go!
-The library compiles cleanly on clang, GCC & MSVC. CI is set up for clang & MSVC. 
+The library compiles cleanly on clang, GCC & MSVC. CI is set up for clang & MSVC.
 
 #### Run Tests
 ```sh
@@ -47,7 +47,7 @@ ctest .
 Features
 --------
 
-- Full support for python's struct format, including:
+- [Full support for python's struct format](https://docs.python.org/2/library/struct.html#format-strings), including:
   - Byte order (little/big/network/native endian)
   - Strings (sized strings)
   - Repeat count for basic types
@@ -57,10 +57,11 @@ Features
   - calcsize
 - Constexpr format - zero overhead to actual structs
 
-#### Limitations
+#### Caveats
 - float & double formats are not constexpr due to no constexpr reinterpret-cast
 - A macro (PY_STRING) is used for the compile-time string because the UDL version is a gcc extension
 - Compile time diagnostics are not beautiful
+- Pascal strings (`p` format char) and pointer values (`P` format char) aren't supported
 
 Contributing
 ------------
