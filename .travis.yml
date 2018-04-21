@@ -50,7 +50,7 @@ matrix:
       before_script:
         - pip install --user cpp-coveralls
       after_success:
-        - coveralls --exclude tests --gcov-options '\-lp'
+        - coveralls --verbose -E /usr/include.* -e build/external -e build/internal -e tests --gcov-options '\-lp'
 
 
 ################
@@ -104,5 +104,4 @@ script:
 
   - cmake --build . -- -j${JOBS}
   - ctest --output-on-failure -j${JOBS}
-  - pwd
-  - ls -R
+  - cd ..

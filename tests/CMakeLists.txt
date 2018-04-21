@@ -57,7 +57,7 @@ if(CPPYSTRUCT_Coverage)
     endif()
 
     # enable profiling
-    target_compile_options(cppystruct_tests_config INTERFACE -lgcov --coverage -g -O0 -fprofile-arcs -ftest-coverage)
+    target_compile_options(cppystruct_tests_config INTERFACE -lgcov --coverage -g -O0 -fprofile-arcs -ftest-coverage -fno-inline -fno-inline-small-functions -fno-default-inline)
     target_link_libraries(cppystruct_tests_config
                           INTERFACE gcov)
 
