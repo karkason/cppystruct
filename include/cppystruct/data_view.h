@@ -24,6 +24,10 @@ constexpr void store(data_view<char>& d, unsigned char v) {
     d.bytes[0] = char(v & 0xFF);
 }
 
+constexpr void store(data_view<char>& d, bool v) {
+    d.bytes[0] = static_cast<char>(v);
+}
+
 constexpr void store(data_view<char>& d, uint16_t v) {
     if (!d.isBigEndian) {
         d.bytes[0] = char(v & 0xFF);
@@ -161,6 +165,11 @@ constexpr unsigned char get(const data_view<const char>& d) {
 }
 
 template <>
+constexpr bool get(const data_view<const char>& d) {
+    return get<unsigned char>(d) != '\0';
+}
+
+template <>
 constexpr uint16_t get(const data_view<const char>& d) {
     uint16_t v = 0;
     if (!d.isBigEndian) {
@@ -204,8 +213,8 @@ constexpr uint64_t get(const data_view<const char>& d) {
         v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[5] & 0xFF) << 40ULL);
         v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[6] & 0xFF) << 48ULL);
         v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[7] & 0xFF) << 56ULL);
-    } else {																
-        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[7] & 0xFF));	
+    } else {
+        v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[7] & 0xFF));
         v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[6] & 0xFF) << 8ULL);
         v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[5] & 0xFF) << 16ULL);
         v += static_cast<uint64_t>(static_cast<uint64_t>(d.bytes[4] & 0xFF) << 24ULL);

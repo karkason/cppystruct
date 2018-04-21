@@ -20,7 +20,7 @@ constexpr bool isFormatChar(char formatChar)
         || formatChar == 'h' || formatChar == 'H' || formatChar == 'i'
         || formatChar == 'I' || formatChar == 'l' || formatChar == 'L'
         || formatChar == 'q' || formatChar == 'Q' || formatChar == 'f'
-        || formatChar == 'd'
+        || formatChar == 'd' || formatChar == '?'
         || internal::isDigit(formatChar);
 }
 
@@ -71,6 +71,7 @@ struct BigEndianFormat
         using RepresentedType = rep_type; \
     }
 
+SET_FORMAT_CHAR('?', 1, bool);
 SET_FORMAT_CHAR('x', 1, char);
 SET_FORMAT_CHAR('b', 1, int8_t);
 SET_FORMAT_CHAR('B', 1, uint8_t);

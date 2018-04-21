@@ -2,6 +2,8 @@
 #include "constexpr_require.h"
 #include "constexpr_compare.h"
 
+#include <limits>
+#include <string>
 #include <catch.hpp>
 
 using namespace std::string_view_literals;
@@ -46,4 +48,16 @@ TEST_CASE("unpack signed ints", "[cppystruct::unpack]")
     REQUIRE_STATIC(pystruct::unpack(PY_STRING(">bhilq"), "\x7f\x7f\xff\x7f\xff\xff\xff\x7f\xff\xff\xff\x7f\xff\xff\xff\xff\xff\xff\xff"sv) == std::make_tuple(127, 32767, 2147483647, 2147483647, 9223372036854775807));
     REQUIRE_STATIC(pystruct::unpack(PY_STRING("!bhilq"), "\x7f\x7f\xff\x7f\xff\xff\xff\x7f\xff\xff\xff\x7f\xff\xff\xff\xff\xff\xff\xff"sv) == std::make_tuple(127, 32767, 2147483647, 2147483647, 9223372036854775807));
     REQUIRE_STATIC(pystruct::unpack(PY_STRING("<bhilq"), "\x7f\xff\x7f\xff\xff\xff\x7f\xff\xff\xff\x7f\xff\xff\xff\xff\xff\xff\xff\x7f"sv) == std::make_tuple(127, 32767, 2147483647, 2147483647, 9223372036854775807));
+}
+
+TEST_CASE("unpack bools", "[cppystruct::unpack]")
+{
+    REQUIRE_STATIC(pystruct::unpack(PY_STRING("?"), "\x01"sv) == std::make_tuple(true));
+    REQUIRE_STATIC(pystruct::unpack(PY_STRING("?"), "\x00"sv) == std::make_tuple(false));
+
+
+    // Non-zero == true
+    for(char i = 1; i < std::numeric_limits<char>::max(); i++) {
+        REQUIRE(pystruct::unpack(PY_STRING("?"), std::string("") + i) == std::make_tuple(true));
+    }
 }
