@@ -106,7 +106,10 @@ auto runPythonPack(Fmt, const Args&... toPack)
 
     // Run the python script
     std::string scriptRunCommand = "python " + pythonScriptPath;
-    system(scriptRunCommand.c_str());
+    auto retVal = system(scriptRunCommand.c_str());
+    if(retVal != 0) {
+        FAIL("Python run failed with error code " << retVal);
+    }
 
     // Read the python script output
     std::ifstream inputFile(packedBinaryFilePath, std::ios::binary);
