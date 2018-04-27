@@ -83,7 +83,6 @@ constexpr void store(data_view<char>& d, unsigned long v) {
     }
 }
 #else
-template <>
 constexpr void store(data_view<char>& d, unsigned long long v) {
     if constexpr(sizeof(unsigned long long) == 4) {
         return store(d, static_cast<uint32_t>(v));
@@ -162,7 +161,6 @@ constexpr void store(data_view<char>& d, long v) {
     }
 }
 #else
-template <>
 constexpr void store(data_view<char>& d, long long v) {
     if constexpr(sizeof(long long) == 4) {
         return store(d, static_cast<int32_t>(v));
