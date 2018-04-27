@@ -230,13 +230,14 @@ constexpr uint64_t get(const data_view<const char>& d) {
 #ifdef _MSC_VER
 template <>
 constexpr unsigned long get(const data_view<const char>& d) {
-    if constexpr(sizeof(long) == 4) {
+    if constexpr(sizeof(unsigned long) == 4) {
         return get<uint32_t>(d);
     } else {
         return get<uint64_t>(d);
     }
 }
 #else
+template <>
 constexpr unsigned long long get(const data_view<const char>& d) {
     if constexpr(sizeof(unsigned long long) == 4) {
         return get<uint32_t>(d);
@@ -289,6 +290,7 @@ constexpr long get(const data_view<const char>& d) {
     }
 }
 #else
+template <>
 constexpr long long get(const data_view<const char>& d) {
     if constexpr(sizeof(long long) == 4) {
         return get<int32_t>(d);
