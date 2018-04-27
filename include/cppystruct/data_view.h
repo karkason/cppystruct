@@ -228,6 +228,15 @@ constexpr uint64_t get(const data_view<const char>& d) {
 }
 
 template <>
+constexpr unsigned long get(const data_view<const char>& d) {
+    if constexpr(sizeof(long) == 4) {
+        return get<uint32_t>(d);
+    } else {
+        return get<uint64_t>(d);
+    }
+}
+
+template <>
 constexpr signed char get(const data_view<const char>& d) {
     uint8_t b = get<unsigned char>(d);
     return static_cast<int8_t>(b - 0xFFULL - 1);
@@ -258,6 +267,15 @@ template <>
 constexpr int64_t get(const data_view<const char>& d) {
     uint64_t b = get<uint64_t>(d);
     return static_cast<int64_t>(b - 0xFFFFFFFFFFFFFFFFULL - 1);
+}
+
+template <>
+constexpr long get(const data_view<const char>& d) {
+    if constexpr(sizeof(long) == 4) {
+        return get<int32_t>(d);
+    } else {
+        return get<int64_t>(d);
+    }
 }
 
 template <>

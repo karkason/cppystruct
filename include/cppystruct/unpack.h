@@ -40,9 +40,10 @@ constexpr auto internal::unpack(std::index_sequence<Items...>, Input&& packedInp
     constexpr auto formatMode = pystruct::getFormatMode(Fmt{});
 
     constexpr FormatType formats[] = { pystruct::getTypeOfItem<Items>(Fmt{})... };
-    using Types = std::tuple<typename pystruct::BigEndianFormat<
+    using Types = std::tuple<typename pystruct::RepresentedType<
+        decltype(formatMode),
         formats[Items].formatChar
-    >::RepresentedType ...>;
+    > ...>;
 
     constexpr size_t offsets[] = { getBinaryOffset<Items>(Fmt{})... };
     auto unpacked = std::make_tuple(unpackElement<Items, std::tuple_element_t<Items, Types>>(

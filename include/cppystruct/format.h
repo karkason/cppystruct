@@ -67,40 +67,48 @@ struct BigEndianFormat
     static constexpr size_t size() { return 0; }
 };
 
-#define SET_FORMAT_CHAR(ch, s, rep_type) \
+#define SET_FORMAT_CHAR(ch, s, rep_type, native_rep_type) \
     template <> struct BigEndianFormat<ch> { \
         static constexpr size_t size() { return s; } \
-        static constexpr size_t nativeSize() { return sizeof(rep_type); } \
+        static constexpr size_t nativeSize() { return sizeof(native_rep_type); } \
         using RepresentedType = rep_type; \
+        using NativeRepresentedType = native_rep_type; \
     }
 
-SET_FORMAT_CHAR('?', 1, bool);
-SET_FORMAT_CHAR('x', 1, char);
-SET_FORMAT_CHAR('b', 1, int8_t);
-SET_FORMAT_CHAR('B', 1, uint8_t);
-SET_FORMAT_CHAR('c', 1, char);
 
+template <typename Fmt, char FormatChar>
+using RepresentedType = std::conditional_t<Fmt::isNative(),
+                                          typename BigEndianFormat<FormatChar>::NativeRepresentedType,
+                                          typename BigEndianFormat<FormatChar>::RepresentedType>;
 
-// Define string_view with custom native size
-template <> struct BigEndianFormat<'s'> {
+SET_FORMAT_CHAR('?', 1, bool, bool);
+SET_FORMAT_CHAR('x', 1, char, char);
+SET_FORMAT_CHAR('b', 1, int8_t, signed char);
+SET_FORMAT_CHAR('B', 1, uint8_t, unsigned char);
+SET_FORMAT_CHAR('c', 1, char, char);
+
+// Explicitly defining string - It's size is sizeof(char)
+template <>
+struct BigEndianFormat<'s'> {
     static constexpr size_t size() { return sizeof(char); }
     static constexpr size_t nativeSize() { return sizeof(char); }
     using RepresentedType = std::string_view;
+    using NativeRepresentedType = std::string_view;
 };
 
 // Pascal strings are not supported ideologically
 //SET_FORMAT_CHAR('p', 1, ?);
 
-SET_FORMAT_CHAR('h', 2, int16_t);
-SET_FORMAT_CHAR('H', 2, uint16_t);
-SET_FORMAT_CHAR('i', 4, int32_t);
-SET_FORMAT_CHAR('I', 4, uint32_t);
-SET_FORMAT_CHAR('l', 4, int32_t);
-SET_FORMAT_CHAR('L', 4, uint32_t);
-SET_FORMAT_CHAR('q', 8, int64_t);
-SET_FORMAT_CHAR('Q', 8, uint64_t);
-SET_FORMAT_CHAR('f', 4, float);
-SET_FORMAT_CHAR('d', 8, double);
+SET_FORMAT_CHAR('h', 2, int16_t, short);
+SET_FORMAT_CHAR('H', 2, uint16_t, unsigned short);
+SET_FORMAT_CHAR('i', 4, int32_t, int);
+SET_FORMAT_CHAR('I', 4, uint32_t, unsigned int);
+SET_FORMAT_CHAR('l', 4, int32_t, long);
+SET_FORMAT_CHAR('L', 4, uint32_t, unsigned long);
+SET_FORMAT_CHAR('q', 8, int64_t, long long);
+SET_FORMAT_CHAR('Q', 8, uint64_t, unsigned long long);
+SET_FORMAT_CHAR('f', 4, float, float);
+SET_FORMAT_CHAR('d', 8, double, double);
 
 
 template <typename Fmt>
