@@ -74,6 +74,25 @@ constexpr void store(data_view<char>& d, uint64_t v) {
     }
 }
 
+#ifdef _MSC_VER
+constexpr void store(data_view<char>& d, unsigned long v) {
+    if constexpr(sizeof(unsigned long) == 4) {
+        return store(d, static_cast<uint32_t>(v));
+    } else {
+        return store(d, static_cast<uint64_t>(v));
+    }
+}
+#else
+template <>
+constexpr void store(data_view<char>& d, unsigned long long v) {
+    if constexpr(sizeof(unsigned long long) == 4) {
+        return store(d, static_cast<uint32_t>(v));
+    } else {
+        return store(d, static_cast<uint64_t>(v));
+    }
+}
+#endif
+
 constexpr void store(data_view<char>& d, signed char v) {
     uint8_t b = 0;
 
@@ -133,6 +152,25 @@ constexpr void store(data_view<char>& d, int64_t v) {
 
     store(d, b);
 }
+
+#ifdef _MSC_VER
+constexpr void store(data_view<char>& d, long v) {
+    if constexpr(sizeof(long) == 4) {
+        return store(d, static_cast<int32_t>(v));
+    } else {
+        return store(d, static_cast<int64_t>(v));
+    }
+}
+#else
+template <>
+constexpr void store(data_view<char>& d, long long v) {
+    if constexpr(sizeof(long long) == 4) {
+        return store(d, static_cast<int32_t>(v));
+    } else {
+        return store(d, static_cast<int64_t>(v));
+    }
+}
+#endif
 
 inline void store(data_view<char>& d, double v) {
     *(double*)d.bytes = v;
