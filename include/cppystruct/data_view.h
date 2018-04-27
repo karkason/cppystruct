@@ -236,6 +236,14 @@ constexpr unsigned long get(const data_view<const char>& d) {
         return get<uint64_t>(d);
     }
 }
+#else
+constexpr unsigned long long get(const data_view<const char>& d) {
+    if constexpr(sizeof(unsigned long long) == 4) {
+        return get<uint32_t>(d);
+    } else {
+        return get<uint64_t>(d);
+    }
+}
 #endif
 
 template <>
@@ -275,6 +283,14 @@ constexpr int64_t get(const data_view<const char>& d) {
 template <>
 constexpr long get(const data_view<const char>& d) {
     if constexpr(sizeof(long) == 4) {
+        return get<int32_t>(d);
+    } else {
+        return get<int64_t>(d);
+    }
+}
+#else
+constexpr long long get(const data_view<const char>& d) {
+    if constexpr(sizeof(long long) == 4) {
         return get<int32_t>(d);
     } else {
         return get<int64_t>(d);
