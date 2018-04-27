@@ -178,7 +178,7 @@ TEST_CASE("pack single items", "[cppystruct::binary_compat]")
     TEST_PACK("B", std::numeric_limits<unsigned char>::max());
     TEST_PACK("H", std::numeric_limits<unsigned short>::max());
     TEST_PACK("I", std::numeric_limits<unsigned int>::max());
-    TEST_PACK("L", std::numeric_limits<unsigned long>::max());
+    TEST_PACK("L", std::numeric_limits<unsigned int>::max()); // L is unsigned int with standard sizing
     TEST_PACK("Q", std::numeric_limits<unsigned long long>::max());
 
     // Strings
