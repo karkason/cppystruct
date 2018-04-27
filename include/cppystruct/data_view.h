@@ -227,6 +227,7 @@ constexpr uint64_t get(const data_view<const char>& d) {
     return v;
 }
 
+#ifdef _MSC_VER
 template <>
 constexpr unsigned long get(const data_view<const char>& d) {
     if constexpr(sizeof(long) == 4) {
@@ -235,6 +236,7 @@ constexpr unsigned long get(const data_view<const char>& d) {
         return get<uint64_t>(d);
     }
 }
+#endif
 
 template <>
 constexpr signed char get(const data_view<const char>& d) {
@@ -269,6 +271,7 @@ constexpr int64_t get(const data_view<const char>& d) {
     return static_cast<int64_t>(b - 0xFFFFFFFFFFFFFFFFULL - 1);
 }
 
+#ifdef _MSC_VER
 template <>
 constexpr long get(const data_view<const char>& d) {
     if constexpr(sizeof(long) == 4) {
@@ -277,6 +280,7 @@ constexpr long get(const data_view<const char>& d) {
         return get<int64_t>(d);
     }
 }
+#endif
 
 template <>
 inline double get(const data_view<const char>& d) {
