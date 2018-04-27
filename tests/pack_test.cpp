@@ -2,6 +2,7 @@
 #include "constexpr_require.h"
 #include "constexpr_compare.h"
 
+#define CATCH_CONFIG_ENABLE_TUPLE_STRINGMAKER
 #include <catch.hpp>
 
 using namespace std::string_view_literals;

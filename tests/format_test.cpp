@@ -1,6 +1,7 @@
 #include "cppystruct.h"
 #include "constexpr_require.h"
 
+#define CATCH_CONFIG_ENABLE_TUPLE_STRINGMAKER
 #include <catch.hpp>
 
 

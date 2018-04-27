@@ -9,8 +9,45 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <iomanip>
 
+#define CATCH_CONFIG_ENABLE_TUPLE_STRINGMAKER
 #include <catch.hpp>
+
+
+template <typename T>
+std::string escapeString(const T& val)
+{
+    std::string out = "\"";
+    for(auto c : val) {
+        if(isgraph(c)) {
+            out.push_back(c);
+        } else if (isprint(c)) {
+            switch(c) {
+            case '\n':
+                out += "\\n";
+                break;
+            case '\r':
+                out += "\\r";
+                break;
+            case '\t':
+                out += "\\t";
+                break;
+            default:
+                out += c;
+                break;
+            }
+        } else {
+            std::stringstream s;
+            s << std::setfill('0') << std::setw(2) << static_cast<int>(c);
+            out += "\\" + s.str();
+        }
+    }
+
+    out += '"';
+    return out;
+}
 
 template <typename T>
 std::string convertToString(const T& val)
@@ -19,6 +56,8 @@ std::string convertToString(const T& val)
         return "chr(" + std::to_string(val) + ")";
     } else if constexpr (std::is_integral_v<T>) {
         return std::to_string(val);
+    } else if constexpr (std::is_convertible_v<T, std::string>) {
+        return escapeString(val);
     } else {
         return Catch::StringMaker<T>::convert(val);
     }
@@ -71,13 +110,12 @@ auto runPythonPack(Fmt, const Args&... toPack)
 
     // Read the python script output
     std::ifstream inputFile(packedBinaryFilePath, std::ios::binary);
-    while(!inputFile.good()) {
-        inputFile = std::ifstream(packedBinaryFilePath, std::ios::binary);
-    }
-
+    inputFile = std::ifstream(packedBinaryFilePath, std::ios::binary);
     std::vector<char> outputBuffer((
             std::istreambuf_iterator<char>(inputFile)),
             (std::istreambuf_iterator<char>()));
+
+    inputFile.close();
 
     // Remove script+output files
     remove(pythonScriptPath.c_str());
@@ -94,36 +132,71 @@ void testPackAgainstPython(Fmt, const Args&... toPack)
 
     REQUIRE(packed.size() == pythonPacked.size());
     REQUIRE(std::equal(packed.begin(), packed.end(), pythonPacked.begin()));
+
+    auto unpacked = pystruct::unpack(Fmt{}, pythonPacked);
+    REQUIRE(unpacked == std::make_tuple(toPack...));
 }
+
+
+
+#define REULAR_STRING(str) PY_STRING(str)
+#define NATIVE_STRING(str) PY_STRING("@" str)
+#define NATIVE_SIZE_STRING(str) PY_STRING("=" str)
+#define BIG_ENDIAN_STRING(str) PY_STRING(">" str)
+#define NETWORK_ENDIAN_STRING(str) PY_STRING("!" str)
+#define LITTLE_ENDIAN_STRING(str) PY_STRING("<" str)
+
+#define TEST_PACK(str, ...)  testPackAgainstPython(REULAR_STRING(str), __VA_ARGS__); \
+                             testPackAgainstPython(NATIVE_STRING(str), __VA_ARGS__); \
+                             testPackAgainstPython(NATIVE_SIZE_STRING(str), __VA_ARGS__); \
+                             testPackAgainstPython(BIG_ENDIAN_STRING(str), __VA_ARGS__); \
+                             testPackAgainstPython(NETWORK_ENDIAN_STRING(str), __VA_ARGS__); \
+                             testPackAgainstPython(LITTLE_ENDIAN_STRING(str), __VA_ARGS__);
+
 
 TEST_CASE("pack single items", "[cppystruct::binary_compat]")
 {
-    testPackAgainstPython(PY_STRING("?"), true);
-    testPackAgainstPython(PY_STRING("c"), 'a');
+    TEST_PACK("?", false);
+    TEST_PACK("?", true);
+    TEST_PACK("c", 'a');
 
     // Signed - positive
-    testPackAgainstPython(PY_STRING("b"), 126);
-    testPackAgainstPython(PY_STRING("h"), 126);
-    testPackAgainstPython(PY_STRING("i"), 126);
-    testPackAgainstPython(PY_STRING("l"), 126);
-    testPackAgainstPython(PY_STRING("q"), 126);
+    TEST_PACK("b", 126);
+    TEST_PACK("h", 126);
+    TEST_PACK("i", 126);
+    TEST_PACK("l", 126);
+    TEST_PACK("q", 126);
 
     // Signed - negative
-    testPackAgainstPython(PY_STRING("b"), -126);
-    testPackAgainstPython(PY_STRING("h"), -126);
-    testPackAgainstPython(PY_STRING("i"), -126);
-    testPackAgainstPython(PY_STRING("l"), -126);
-    testPackAgainstPython(PY_STRING("q"), -126);
+    TEST_PACK("b", -126);
+    TEST_PACK("h", -126);
+    TEST_PACK("i", -126);
+    TEST_PACK("l", -126);
+    TEST_PACK("q", -126);
 
     // Unsigned
-    testPackAgainstPython(PY_STRING("B"), 112); // printable char
-    testPackAgainstPython(PY_STRING("H"), std::numeric_limits<unsigned short>::max());
-    testPackAgainstPython(PY_STRING("I"), std::numeric_limits<unsigned int>::max());
-    testPackAgainstPython(PY_STRING("L"), std::numeric_limits<unsigned long>::max());
-    testPackAgainstPython(PY_STRING("Q"), std::numeric_limits<unsigned long long>::max());
+    TEST_PACK("B", std::numeric_limits<unsigned char>::max());
+    TEST_PACK("H", std::numeric_limits<unsigned short>::max());
+    TEST_PACK("I", std::numeric_limits<unsigned int>::max());
+    TEST_PACK("L", std::numeric_limits<unsigned long>::max());
+    TEST_PACK("Q", std::numeric_limits<unsigned long long>::max());
 
     // Strings
-    testPackAgainstPython(PY_STRING("50s"), "This is a test");
-    testPackAgainstPython(PY_STRING("500s"), "This is a test");
-    testPackAgainstPython(PY_STRING("5s"), "This is a test");
+    std::string s = "This is a test";
+    s.resize(50);
+    TEST_PACK("50s", s);
+
+    s.resize(500);
+    TEST_PACK("500s", s);
+
+    s.resize(5);
+    TEST_PACK("5s", s);
+}
+
+TEST_CASE("pack compex formats", "[cppystruct::binary_compat]")
+{
+   TEST_PACK("2c3s2H?", 'x', 'y', "zwt", 0x1234, 0x5678, false);
+   TEST_PACK("L2c5si?", 0x1234UL, 'l', 'o', "lolzs", -500, true);
+   TEST_PACK("bhi?lq",  127, 32767, 2147483647, true, 2147483647, 9223372036854775807);
+   TEST_PACK("bhil?q", -127, -32767, -2147483647, -2147483647, false, -9223372036854775807);
 }

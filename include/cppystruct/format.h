@@ -31,19 +31,21 @@ struct FormatMode
 {
     static_assert(isFormatMode(FormatChar), "Invalid Format Mode passed");
 
-    static constexpr bool isBigEndian() { return false; };
-    static constexpr bool shouldPad() { return false; };
+    static constexpr bool isBigEndian() { return false; }
+    static constexpr bool shouldPad() { return false; }
+    static constexpr bool isNative() { return false; }
 };
 
-#define SET_FORMAT_MODE(mode, padding, bigEndian) \
+#define SET_FORMAT_MODE(mode, padding, bigEndian, native) \
     template <> struct FormatMode<mode> { \
         static constexpr bool isBigEndian() { return bigEndian; }; \
         static constexpr bool shouldPad() { return padding; }; \
+        static constexpr bool isNative() { return native; } \
     }
 
-SET_FORMAT_MODE('@', true, false);
-SET_FORMAT_MODE('>', false, true);
-SET_FORMAT_MODE('!', false, true);
+SET_FORMAT_MODE('@', true, false, true);
+SET_FORMAT_MODE('>', false, true, false);
+SET_FORMAT_MODE('!', false, true, false);
 
 constexpr bool doesFormatAlign(size_t size)
 {
@@ -68,6 +70,7 @@ struct BigEndianFormat
 #define SET_FORMAT_CHAR(ch, s, rep_type) \
     template <> struct BigEndianFormat<ch> { \
         static constexpr size_t size() { return s; } \
+        static constexpr size_t nativeSize() { return sizeof(rep_type); } \
         using RepresentedType = rep_type; \
     }
 
@@ -76,7 +79,14 @@ SET_FORMAT_CHAR('x', 1, char);
 SET_FORMAT_CHAR('b', 1, int8_t);
 SET_FORMAT_CHAR('B', 1, uint8_t);
 SET_FORMAT_CHAR('c', 1, char);
-SET_FORMAT_CHAR('s', 1, std::string_view);
+
+
+// Define string_view with custom native size
+template <> struct BigEndianFormat<'s'> {
+    static constexpr size_t size() { return sizeof(char); }
+    static constexpr size_t nativeSize() { return sizeof(char); }
+    using RepresentedType = std::string_view;
+};
 
 // Pascal strings are not supported ideologically
 //SET_FORMAT_CHAR('p', 1, ?);
@@ -102,6 +112,16 @@ constexpr auto getFormatMode(Fmt)
         return FormatMode<firstChar>{};
     } else {
         return FormatMode<'@'>{};
+    }
+}
+
+template <typename Fmt, typename BigEndianFmt>
+constexpr size_t getSize()
+{
+    if constexpr (getFormatMode(Fmt{}).isNative()) {
+        return BigEndianFmt::nativeSize();
+    } else {
+        return BigEndianFmt::size();
     }
 }
 
@@ -156,7 +176,7 @@ constexpr FormatType getTypeOfItem(std::index_sequence<Is...>)
         if constexpr (((currentChar != 's') && (Item >= CurrentItem) && (Item < (CurrentItem + Multiplier)))
             || ((currentChar == 's') && (Item == CurrentItem))) {
             if constexpr (currentChar != 's') {
-                return FormatType{ BigEndianFormat<currentChar>::size(), currentChar };
+                return FormatType{ getSize<Fmt, BigEndianFormat<currentChar>>(), currentChar };
             } else {
                 return FormatType{ Multiplier, currentChar };
             }
@@ -180,7 +200,7 @@ template <typename Fmt, size_t... Items>
 constexpr size_t getBinaryOffset(Fmt, std::index_sequence<Items...>)
 {
     constexpr FormatType itemTypes[] = { getTypeOfItem<Items>(Fmt{})... };
-    constexpr size_t formatSizes[] = { BigEndianFormat<itemTypes[Items].formatChar>::size()... };
+    constexpr size_t formatSizes[] = { getSize<Fmt, BigEndianFormat<itemTypes[Items].formatChar>>()... };
 
     constexpr auto formatMode = pystruct::getFormatMode(Fmt{});
 
