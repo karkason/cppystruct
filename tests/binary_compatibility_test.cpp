@@ -8,13 +8,16 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <fstream>
 
 #include <catch.hpp>
 
 template <typename T>
 std::string convertToString(const T& val)
 {
-    if constexpr (std::is_integral_v<T> && sizeof(T) >= 4) {
+    if constexpr (std::is_same_v<T, char>) {
+        return "chr(" + std::to_string(val) + ")";
+    } else if constexpr (std::is_integral_v<T>) {
         return std::to_string(val);
     } else {
         return Catch::StringMaker<T>::convert(val);
@@ -23,63 +26,74 @@ std::string convertToString(const T& val)
 
 
 template <typename Fmt, typename... Args>
-auto runPythonPack(Fmt, const Args&... toPack)
+std::string buildPythonScript(Fmt, const std::string& outputPath, const Args&... toPack)
 {
-    std::string args[] = { convertToString(toPack)... };
-
-    std::string packedBinaryFilePath = std::tmpnam(nullptr);
     std::string pythonScript = R"py(
 # Workaround for Catch::StringMaker<bool>
 true = True
 false = False
 
 import struct
-bin = struct.pack(')py" + std::string(Fmt::value()) + "'";
+bin = struct.pack()py" + convertToString(Fmt::value());
 
+    std::string args[] = { convertToString(toPack)... };
     for(const auto& arg : args) {
         pythonScript += ", ";
         pythonScript += arg;
     }
 
     pythonScript +=  R"py()
-open(r')py" + packedBinaryFilePath + R"py(', 'wb').write(bin)
+with open(r')py" + outputPath + R"py(', 'wb') as f:
+    f.write(bin)
     )py";
 
+    return pythonScript;
+}
+
+
+template <typename Fmt, typename... Args>
+auto runPythonPack(Fmt, const Args&... toPack)
+{
+    // Create the python script
+    std::string packedBinaryFilePath = std::tmpnam(nullptr);
+    std::string pythonScript = buildPythonScript(Fmt{}, packedBinaryFilePath, toPack...);
     std::cout << pythonScript << std::endl;
 
+    // Write the python script
     std::string pythonScriptPath = std::tmpnam(nullptr);
-    if (FILE* pythonScriptFile = fopen(pythonScriptPath.data(), "wb+")) {
-        fputs(pythonScript.data(), pythonScriptFile);
-        fclose(pythonScriptFile);
+    auto pythonScriptFile = std::ofstream(pythonScriptPath, std::ios::binary);
+    pythonScriptFile.write(pythonScript.data(), pythonScript.size());
+    pythonScriptFile.close(); // Flush to disk
+
+    // Run the python script
+    std::string scriptRunCommand = "python " + pythonScriptPath;
+    system(scriptRunCommand.c_str());
+
+    // Read the python script output
+    std::ifstream inputFile(packedBinaryFilePath, std::ios::binary);
+    while(!inputFile.good()) {
+        inputFile = std::ifstream(packedBinaryFilePath, std::ios::binary);
     }
 
-    system(("python " + pythonScriptPath).data());
+    std::vector<char> outputBuffer((
+            std::istreambuf_iterator<char>(inputFile)),
+            (std::istreambuf_iterator<char>()));
 
-    std::vector<char> output;
-    if (FILE *fp = fopen(packedBinaryFilePath.c_str(), "rb"))
-    {
-        char buf[1024];
-        while (size_t len = fread(buf, 1, sizeof(buf), fp)) {
-            output.insert(output.end(), buf, buf + len);
-        }
+    // Remove script+output files
+    remove(pythonScriptPath.c_str());
+    remove(packedBinaryFilePath.c_str());
 
-        fclose(fp);
-        remove(packedBinaryFilePath.c_str());
-    }
-
-    return std::make_tuple(output, pythonScriptPath);
+    return outputBuffer;
 }
 
 template <typename Fmt, typename... Args>
 void testPackAgainstPython(Fmt, const Args&... toPack)
 {
     auto packed = pystruct::pack(Fmt{}, toPack...);
-    auto [pythonPacked, pythonScript] = runPythonPack(Fmt{}, toPack...);
+    auto pythonPacked = runPythonPack(Fmt{}, toPack...);
 
     REQUIRE(packed.size() == pythonPacked.size());
     REQUIRE(std::equal(packed.begin(), packed.end(), pythonPacked.begin()));
-
-    remove(pythonScript.c_str());
 }
 
 TEST_CASE("pack single items", "[cppystruct::binary_compat]")
