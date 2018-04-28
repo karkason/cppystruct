@@ -31,6 +31,9 @@ matrix:
     - env: COMPILER=clang++-5.0 BUILD_TYPE=Release
       addons: *clang50
 
+    - env: COMPILER=clang++-5.0 BUILD_TYPE=Debug CMAKE_OPTIONS=-DCPPYSTRUCT_32Bit=ON
+      addons: *clang50
+
     # GCC 7
     - env: COMPILER=g++-7 BUILD_TYPE=Debug
       addons: &gcc7
@@ -41,6 +44,9 @@ matrix:
             - ubuntu-toolchain-r-test
 
     - env: COMPILER=g++-7 BUILD_TYPE=Release
+      addons: *gcc7
+
+    - env: COMPILER=g++-7 BUILD_TYPE=Debug CMAKE_OPTIONS=-DCPPYSTRUCT_32Bit=ON
       addons: *gcc7
 
     # Coveralls (http://gronlier.fr/blog/2015/01/adding-code-coverage-to-your-c-project/)

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(CppystructTests CXX)
 
 option(CPPYSTRUCT_Coverage "Build test suite with coverage information" OFF)
+option(CPPYSTRUCT_32Bit "Build as 32bit" OFF)
 
 # will make visual studio generated project group files
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -49,6 +50,10 @@ target_compile_options(cppystruct_tests_config INTERFACE
         -Wshadow
     >
 )
+
+if(CPPYSTRUCT_32Bit)
+    target_compile_options(cppystruct_tests_config INTERFACE -m32)
+endif()
 
 if(CPPYSTRUCT_Coverage)
     message(STATUS "Building test suite with coverage information")
