@@ -11,7 +11,7 @@
     #define CPPYSTRCUT_DEFINE_LONG
 #endif
 
-#if LLONG_MAX != INT64_MAX
+#if defined(LLONG_MAX) && (LLONG_MAX != INT64_MAX)
     #define CPPYSTRCUT_DEFINE_LONGLONG
 #endif
 
