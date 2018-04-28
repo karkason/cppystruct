@@ -330,7 +330,7 @@ constexpr int64_t get(const data_view<const char>& d) {
     return static_cast<int64_t>(b - 0xFFFFFFFFFFFFFFFFULL - 1);
 }
 
-#ifdef _MSC_VER
+#ifdef CPPYSTRCUT_DEFINE_LONG
 template <>
 constexpr long get(const data_view<const char>& d) {
     if constexpr(sizeof(long) == 4) {
@@ -339,7 +339,9 @@ constexpr long get(const data_view<const char>& d) {
         return get<int64_t>(d);
     }
 }
-#else
+#endif
+
+#ifdef CPPYSTRCUT_DEFINE_LONGLONG
 template <>
 constexpr long long get(const data_view<const char>& d) {
     if constexpr(sizeof(long long) == 4) {
