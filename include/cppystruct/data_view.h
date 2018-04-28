@@ -13,6 +13,8 @@
 
 #if defined(LLONG_MAX) && (LLONG_MAX != INT64_MAX)
     #define CPPYSTRCUT_DEFINE_LONGLONG
+#elif defined(LONG_LONG_MAX) && (LONG_LONG_MAX != INT64_MAX)
+    #define CPPYSTRCUT_DEFINE_LONGLONG
 #endif
 
 namespace pystruct {
