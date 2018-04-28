@@ -85,6 +85,7 @@ matrix:
 ################
 
 install:
+  - ln -s /usr/include/asm-generic /usr/include/asm
   - uname -a
 
   # Set the ${CXX} variable properly
