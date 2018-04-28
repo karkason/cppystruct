@@ -7,6 +7,14 @@
 #include <string_view>
 
 
+#if LONG_MAX == INT32_MAX && INT_MAX == INT32_MAX
+    #define CPPYSTRCUT_DEFINE_LONG
+#endif
+
+#if LLONG_MAX != INT64_MAX
+    #define CPPYSTRCUT_DEFINE_LONGLONG
+#endif
+
 namespace pystruct {
 
 template <typename T>
@@ -74,7 +82,7 @@ constexpr void store(data_view<char>& d, uint64_t v) {
     }
 }
 
-#ifdef _MSC_VER
+#ifdef CPPYSTRCUT_DEFINE_LONG
 constexpr void store(data_view<char>& d, unsigned long v) {
     if constexpr(sizeof(unsigned long) == 4) {
         return store(d, static_cast<uint32_t>(v));
@@ -82,7 +90,9 @@ constexpr void store(data_view<char>& d, unsigned long v) {
         return store(d, static_cast<uint64_t>(v));
     }
 }
-#else
+#endif
+
+#ifdef CPPYSTRCUT_DEFINE_LONGLONG
 constexpr void store(data_view<char>& d, unsigned long long v) {
     if constexpr(sizeof(unsigned long long) == 4) {
         return store(d, static_cast<uint32_t>(v));
@@ -152,7 +162,7 @@ constexpr void store(data_view<char>& d, int64_t v) {
     store(d, b);
 }
 
-#ifdef _MSC_VER
+#ifdef CPPYSTRCUT_DEFINE_LONG
 constexpr void store(data_view<char>& d, long v) {
     if constexpr(sizeof(long) == 4) {
         return store(d, static_cast<int32_t>(v));
@@ -160,7 +170,9 @@ constexpr void store(data_view<char>& d, long v) {
         return store(d, static_cast<int64_t>(v));
     }
 }
-#else
+#endif
+
+#ifdef CPPYSTRCUT_DEFINE_LONGLONG
 constexpr void store(data_view<char>& d, long long v) {
     if constexpr(sizeof(long long) == 4) {
         return store(d, static_cast<int32_t>(v));
@@ -263,7 +275,7 @@ constexpr uint64_t get(const data_view<const char>& d) {
     return v;
 }
 
-#ifdef _MSC_VER
+#ifdef CPPYSTRCUT_DEFINE_LONG
 template <>
 constexpr unsigned long get(const data_view<const char>& d) {
     if constexpr(sizeof(unsigned long) == 4) {
@@ -272,7 +284,9 @@ constexpr unsigned long get(const data_view<const char>& d) {
         return get<uint64_t>(d);
     }
 }
-#else
+#endif
+
+#ifdef CPPYSTRCUT_DEFINE_LONGLONG
 template <>
 constexpr unsigned long long get(const data_view<const char>& d) {
     if constexpr(sizeof(unsigned long long) == 4) {
