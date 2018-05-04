@@ -54,7 +54,7 @@ std::string convertToString(const T& val)
 {
     if constexpr (std::is_same_v<T, char>) {
         return "chr(" + std::to_string(val) + ")";
-    } else if constexpr (std::is_integral_v<T>) {
+    } else if constexpr (std::is_integral_v<T> || std::is_floating_point_v<T>) {
         return std::to_string(val);
     } else if constexpr (std::is_convertible_v<T, std::string>) {
         return escapeString(val);
@@ -133,6 +133,10 @@ void testPackAgainstPython(Fmt, const Args&... toPack)
     auto packed = pystruct::pack(Fmt{}, toPack...);
     auto pythonPacked = runPythonPack(Fmt{}, toPack...);
 
+
+    CAPTURE(packed);
+    CAPTURE(pythonPacked);
+
     REQUIRE(packed.size() == pythonPacked.size());
     REQUIRE(std::equal(packed.begin(), packed.end(), pythonPacked.begin()));
 
@@ -157,7 +161,7 @@ void testPackAgainstPython(Fmt, const Args&... toPack)
                              testPackAgainstPython(LITTLE_ENDIAN_STRING(str), __VA_ARGS__);
 
 
-TEST_CASE("pack single items", "[cppystruct::binary_compat]")
+TEST_CASE("integers - single items", "[cppystruct::binary_compat]")
 {
     TEST_PACK("?", false);
     TEST_PACK("?", true);
@@ -183,8 +187,10 @@ TEST_CASE("pack single items", "[cppystruct::binary_compat]")
     TEST_PACK("I", std::numeric_limits<unsigned int>::max());
     TEST_PACK("L", std::numeric_limits<unsigned int>::max()); // L is unsigned int with standard sizing
     TEST_PACK("Q", std::numeric_limits<unsigned long long>::max());
+}
 
-    // Strings
+TEST_CASE("strings - single items", "[cppystruct::binary_compat]")
+{
     std::string s = "This is a test";
     s.resize(50);
     TEST_PACK("50s", s);
@@ -196,10 +202,23 @@ TEST_CASE("pack single items", "[cppystruct::binary_compat]")
     TEST_PACK("5s", s);
 }
 
-TEST_CASE("pack compex formats", "[cppystruct::binary_compat]")
+TEST_CASE("floats - single items", "[cppystruct::binary_compat]")
 {
-   TEST_PACK("2c3s2H?", 'x', 'y', "zwt", 0x1234, 0x5678, false);
-   TEST_PACK("L2c5si?", 0x1234UL, 'l', 'o', "lolzs", -500, true);
-   TEST_PACK("bhi?lq",  127, 32767, 2147483647, true, 2147483647, 9223372036854775807);
-   TEST_PACK("bhil?q", -127, -32767, -2147483647, -2147483647, false, -9223372036854775807);
+    TEST_PACK("f", 0);
+    TEST_PACK("d", 0);
+
+    TEST_PACK("f", std::numeric_limits<float>::max());
+    TEST_PACK("d", std::numeric_limits<double>::max());
+
+    TEST_PACK("f", std::numeric_limits<float>::min());
+    TEST_PACK("d", std::numeric_limits<double>::min());
+}
+
+
+TEST_CASE("pack complex formats", "[cppystruct::binary_compat]")
+{
+   TEST_PACK("2cf3s2H?", 'x', 'y', 0.5, "zwt", 0x1234, 0x5678, false);
+   TEST_PACK("L2cd5si?", 0x1234UL, 'l', 'o', 3.14159, "lolzs", -500, true);
+   TEST_PACK("bhi?lfq",  127, 32767, 2147483647, true, 2147483647, 123456, 9223372036854775807);
+   TEST_PACK("bhil?fq", -127, -32767, -2147483647, -2147483647, false, -500, -9223372036854775807);
 }
