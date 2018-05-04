@@ -201,6 +201,7 @@ constexpr RawFormatType getUnwrappedItem(RawFormatType (&wrappedFormats) [ArrSiz
 		}
 	}
 
+    // cannot get here, Item < ArrSize
 	return {0, 0};
 }
 
@@ -208,7 +209,7 @@ template <size_t Item, typename Fmt, size_t... Is>
 constexpr RawFormatType getTypeOfItem(std::index_sequence<Is...>)
 {
     constexpr char fomratString[] = { Fmt::at(Is)... };
-	RawFormatType types[countItems(Fmt{})] = {0};
+	RawFormatType types[countItems(Fmt{})]{};
 
     size_t currentType = 0;
     for(size_t i = 0; i < sizeof...(Is); i++) {
@@ -234,7 +235,7 @@ constexpr RawFormatType getTypeOfItem(std::index_sequence<Is...>)
 template <size_t Item, typename Fmt>
 constexpr FormatType getTypeOfItem(Fmt)
 {
-	static_assert(Item < countItems(Fmt{}), "Item request must be inside the format");
+	static_assert(Item < countItems(Fmt{}), "Item requested must be inside the format");
     constexpr RawFormatType format = getTypeOfItem<Item, Fmt>(std::make_index_sequence<Fmt::size()>());
 
 	constexpr FormatType sizedFormat = { format.formatChar,
@@ -273,7 +274,5 @@ constexpr size_t getBinaryOffset(Fmt)
 {
     return getBinaryOffset(Fmt{}, std::make_index_sequence<Item+1>());
 }
-
-
 
 } // namespace pystruct
