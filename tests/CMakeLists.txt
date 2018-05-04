@@ -52,7 +52,7 @@ target_compile_options(cppystruct_tests_config INTERFACE
 )
 
 if(CPPYSTRUCT_32Bit)
-    target_compile_options(cppystruct_tests_config INTERFACE -m32)
+    target_compile_options(cppystruct_tests_config INTERFACE -m32 -L/usr/lib32 -m elf_i386)
 endif()
 
 if(CPPYSTRUCT_Coverage)
