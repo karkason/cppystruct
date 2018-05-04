@@ -209,7 +209,7 @@ template <size_t Item, typename Fmt, size_t... Is>
 constexpr RawFormatType getTypeOfItem(std::index_sequence<Is...>)
 {
     constexpr char fomratString[] = { Fmt::at(Is)... };
-	RawFormatType types[countItems(Fmt{})]{};
+	RawFormatType wrappedTypes[countItems(Fmt{})]{};
 
     size_t currentType = 0;
     for(size_t i = 0; i < sizeof...(Is); i++) {
@@ -220,16 +220,16 @@ constexpr RawFormatType getTypeOfItem(std::index_sequence<Is...>)
         auto repeatCount = internal::consumeNumber(fomratString, i);
         i = repeatCount.second;
 
-        types[currentType].formatChar = fomratString[i];
-        types[currentType].repeat = repeatCount.first;
+        wrappedTypes[currentType].formatChar = fomratString[i];
+        wrappedTypes[currentType].repeat = repeatCount.first;
         if(repeatCount.first == 0) {
-            types[currentType].repeat = 1;
+            wrappedTypes[currentType].repeat = 1;
         }
 
 		currentType++;
     }
 
-    return getUnwrappedItem<Item>(types);
+    return getUnwrappedItem<Item>(wrappedTypes);
 }
 
 template <size_t Item, typename Fmt>
