@@ -28,9 +28,6 @@ matrix:
             - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: COMPILER=clang++-5.0 BUILD_TYPE=Release
-      addons: *clang50
-
     # GCC 7
     - env: COMPILER=g++-7 BUILD_TYPE=Debug
       addons: &gcc7
@@ -40,6 +37,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
 
+    # 32bit
     - env: COMPILER=g++-7 BUILD_TYPE=Release
       addons: *gcc7
 
@@ -57,12 +55,12 @@ matrix:
       after_success:
         - coveralls --verbose -E /usr/include.* -e build/catch -e build/external -e build/internal -e tests --gcov-options '\-lp'
 
-
 ################
 # build script #
 ################
 
 install:
+  - sudo ln -s /usr/include/asm-generic /usr/include/asm
   - uname -a
 
   # Set the ${CXX} variable properly

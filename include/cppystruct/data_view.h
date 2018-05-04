@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <string_view>
 
-
 namespace pystruct {
 
 template <typename T>
@@ -19,8 +18,11 @@ struct data_view {
 };
 
 namespace data {
+
+namespace impl {
+
 // Store
-constexpr void store(data_view<char>& d, unsigned char v) {
+constexpr void store(data_view<char>& d, uint8_t v) {
     d.bytes[0] = char(v & 0xFF);
 }
 
@@ -74,7 +76,7 @@ constexpr void store(data_view<char>& d, uint64_t v) {
     }
 }
 
-constexpr void store(data_view<char>& d, signed char v) {
+constexpr void store(data_view<char>& d, int8_t v) {
     uint8_t b = 0;
 
     if (v > 0) {
@@ -84,14 +86,6 @@ constexpr void store(data_view<char>& d, signed char v) {
     }
 
     store(d, b);
-}
-
-constexpr void store(data_view<char>& d, char v) {
-    if constexpr (std::is_unsigned_v<char>) {
-        store(d, static_cast<uint8_t>(v));
-    } else {
-        store(d, static_cast<int8_t>(v));
-    }
 }
 
 constexpr void store(data_view<char>& d, int16_t v) {
@@ -160,13 +154,13 @@ template <typename T>
 constexpr T get(const data_view<const char>& d);
 
 template <>
-constexpr unsigned char get(const data_view<const char>& d) {
-    return static_cast<unsigned char>(d.bytes[0] & '\xFF');
+constexpr uint8_t get(const data_view<const char>& d) {
+    return static_cast<uint8_t>(d.bytes[0] & '\xFF');
 }
 
 template <>
 constexpr bool get(const data_view<const char>& d) {
-    return get<unsigned char>(d) != '\0';
+    return get<uint8_t>(d) != '\0';
 }
 
 template <>
@@ -228,18 +222,9 @@ constexpr uint64_t get(const data_view<const char>& d) {
 }
 
 template <>
-constexpr signed char get(const data_view<const char>& d) {
+constexpr int8_t get(const data_view<const char>& d) {
     uint8_t b = get<unsigned char>(d);
     return static_cast<int8_t>(b - 0xFFULL - 1);
-}
-
-template <>
-constexpr char get(const data_view<const char>& d) {
-    if constexpr (std::is_signed_v<char>) {
-        return static_cast<char>(get<signed char>(d));
-    } else {
-        return static_cast<char>(get<unsigned char>(d));
-    }
 }
 
 template <>
@@ -283,6 +268,55 @@ inline float get(const data_view<const char>& d) {
 template <>
 constexpr std::string_view get(const data_view<const char>& d) {
     return std::string_view(d.bytes, d.size);
+}
+
+template <size_t Bytes>
+struct unsinged_integer;
+
+template <>
+struct unsinged_integer<1> {
+    using type = uint8_t;
+};
+
+template <>
+struct unsinged_integer<2> {
+    using type = uint16_t;
+};
+
+template <>
+struct unsinged_integer<4> {
+    using type = uint32_t;
+};
+
+template <>
+struct unsinged_integer<8> {
+    using type = uint64_t;
+};
+
+template <typename T>
+using integer_type = std::conditional_t<std::is_signed_v<T>,
+                                        typename std::make_signed_t<typename unsinged_integer<sizeof(T)>::type>,
+                                        typename unsinged_integer<sizeof(T)>::type>;
+
+
+} // namespace impl
+
+template <typename T>
+constexpr void store(data_view<char>& d, T v) {
+    if constexpr(std::is_integral_v<T>) {
+        return impl::store(d, static_cast<impl::integer_type<T>>(v));
+    } else {
+        return impl::store(d, v);
+    }
+}
+
+template <typename T>
+constexpr auto get(const data_view<const char>& d) {
+    if constexpr(std::is_integral_v<T> && !std::is_same_v<T, bool>) {
+        return impl::get<impl::integer_type<T>>(d);
+    } else {
+        return impl::get<T>(d);
+    }
 }
 
 } // namespace data

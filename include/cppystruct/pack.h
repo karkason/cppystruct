@@ -53,9 +53,10 @@ constexpr auto pack(std::index_sequence<Items...>, Args&&... args)
     ArrayType output{};
 
     constexpr FormatType formats[] = { pystruct::getTypeOfItem<Items>(Fmt{})... };
-    using Types = std::tuple<typename pystruct::BigEndianFormat<
+    using Types = std::tuple<typename pystruct::RepresentedType<
+        decltype(formatMode),
         formats[Items].formatChar
-    >::RepresentedType ...>;
+    > ...>;
 
     // Convert args to a tuple of the represented types
     Types t = std::make_tuple(convert<std::tuple_element_t<Items, Types>>(std::forward<Args>(args))...);

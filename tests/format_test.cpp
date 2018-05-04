@@ -1,6 +1,7 @@
 #include "cppystruct.h"
 #include "constexpr_require.h"
 
+#define CATCH_CONFIG_ENABLE_TUPLE_STRINGMAKER
 #include <catch.hpp>
 
 
@@ -71,11 +72,19 @@ TEST_CASE("getTypeOfItem with item count", "[cppystruct::format]")
 
 TEST_CASE("getBinaryOffset with item count", "[cppystruct::format]")
 {
+#ifdef _MSC_VER
     REQUIRE_STATIC(pystruct::getBinaryOffset<0>(PY_STRING("L2c5si")) == 0);
     REQUIRE_STATIC(pystruct::getBinaryOffset<1>(PY_STRING("L2c5si")) == 4);
     REQUIRE_STATIC(pystruct::getBinaryOffset<2>(PY_STRING("L2c5si")) == 5);
     REQUIRE_STATIC(pystruct::getBinaryOffset<3>(PY_STRING("L2c5si")) == 6);
     REQUIRE_STATIC(pystruct::getBinaryOffset<4>(PY_STRING("L2c5si")) == 12);
+#else
+    REQUIRE_STATIC(pystruct::getBinaryOffset<0>(PY_STRING("L2c5si")) == 0);
+    REQUIRE_STATIC(pystruct::getBinaryOffset<1>(PY_STRING("L2c5si")) == 8);
+    REQUIRE_STATIC(pystruct::getBinaryOffset<2>(PY_STRING("L2c5si")) == 9);
+    REQUIRE_STATIC(pystruct::getBinaryOffset<3>(PY_STRING("L2c5si")) == 10);
+    REQUIRE_STATIC(pystruct::getBinaryOffset<4>(PY_STRING("L2c5si")) == 16);
+#endif
 
     REQUIRE_STATIC(pystruct::getBinaryOffset<0>(PY_STRING("<L2c5si")) == 0);
     REQUIRE_STATIC(pystruct::getBinaryOffset<1>(PY_STRING("<L2c5si")) == 4);
