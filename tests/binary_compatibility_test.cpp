@@ -54,13 +54,17 @@ std::string convertToString(const T& val)
 {
     if constexpr (std::is_same_v<T, char>) {
         return "chr(" + std::to_string(val) + ")";
-    } else if constexpr (std::is_integral_v<T> || std::is_floating_point_v<T>) {
+    } else if constexpr (std::is_integral_v<T>) {
         return std::to_string(val);
     } else if constexpr (std::is_convertible_v<T, std::string>) {
         return escapeString(val);
-    } else {
-        return Catch::StringMaker<T>::convert(val);
-    }
+    } else if constexpr (std::is_floating_point_v<T>) {
+		std::stringstream ss;
+		ss << std::scientific << std::setprecision(16) << val;
+		return ss.str();
+	} else {
+		return Catch::StringMaker<T>::convert(val);
+	}
 }
 
 
