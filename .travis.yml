@@ -3,7 +3,7 @@
 language: cpp
 sudo: false
 notifications:
-  email: false
+  email: true
 
 # Use Linux unless specified otherwise
 os: linux

@@ -35,7 +35,6 @@ TEST_CASE("pack signed ints", "[cppystruct::pack]")
     REQUIRE_STATIC(pystruct::pack(PY_STRING("!bhilq"), -127, -32767, -2147483647, -2147483647, -9223372036854775807) == "\x81\x80\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x00\x00\x00\x00\x01"sv);
     REQUIRE_STATIC(pystruct::pack(PY_STRING("<bhilq"), -127, -32767, -2147483647, -2147483647, -9223372036854775807) == "\x81\x01\x80\x01\x00\x00\x80\x01\x00\x00\x80\x01\x00\x00\x00\x00\x00\x00\x80"sv);
 
-    REQUIRE_STATIC(pystruct::pack(PY_STRING("bhilq"),  127, 32767, 2147483647, 2147483647, 9223372036854775807) == "\x7f\x00\xff\x7f\xff\xff\xff\x7f\xff\xff\xff\x7f\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\x7f"sv);
     REQUIRE_STATIC(pystruct::pack(PY_STRING(">bhilq"), 127, 32767, 2147483647, 2147483647, 9223372036854775807) == "\x7f\x7f\xff\x7f\xff\xff\xff\x7f\xff\xff\xff\x7f\xff\xff\xff\xff\xff\xff\xff"sv);
     REQUIRE_STATIC(pystruct::pack(PY_STRING("!bhilq"), 127, 32767, 2147483647, 2147483647, 9223372036854775807) == "\x7f\x7f\xff\x7f\xff\xff\xff\x7f\xff\xff\xff\x7f\xff\xff\xff\xff\xff\xff\xff"sv);
     REQUIRE_STATIC(pystruct::pack(PY_STRING("<bhilq"), 127, 32767, 2147483647, 2147483647, 9223372036854775807) == "\x7f\xff\x7f\xff\xff\xff\x7f\xff\xff\xff\x7f\xff\xff\xff\xff\xff\xff\xff\x7f"sv);

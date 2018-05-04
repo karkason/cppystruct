@@ -57,7 +57,6 @@ TEST_CASE("getTypeOfItem with format specifier", "[cppystruct::format]")
     REQUIRE_STATIC(pystruct::getTypeOfItem<0>(PY_STRING("<cih")).formatChar == 'c');
 }
 
-
 TEST_CASE("getTypeOfItem with item count", "[cppystruct::format]")
 {
     REQUIRE_STATIC(pystruct::getTypeOfItem<0>(PY_STRING("L2ci")).formatChar == 'L');
@@ -68,7 +67,23 @@ TEST_CASE("getTypeOfItem with item count", "[cppystruct::format]")
     REQUIRE_STATIC(pystruct::getTypeOfItem<0>(PY_STRING("c3sh")).formatChar == 'c');
     REQUIRE_STATIC(pystruct::getTypeOfItem<1>(PY_STRING("c3sh")).formatChar == 's');
     REQUIRE_STATIC(pystruct::getTypeOfItem<2>(PY_STRING("c3sh")).formatChar == 'h');
+
+
+    // <L2c5si
+    REQUIRE_STATIC(pystruct::getTypeOfItem<0>(PY_STRING("<L2c5si")).formatChar == 'L');
+
+    REQUIRE_STATIC(pystruct::getTypeOfItem<1>(PY_STRING("<L2c5si")).formatChar == 'c');
+    REQUIRE_STATIC(pystruct::getTypeOfItem<1>(PY_STRING("<L2c5si")).size == 1);
+
+    REQUIRE_STATIC(pystruct::getTypeOfItem<2>(PY_STRING("<L2c5si")).formatChar == 'c');
+    REQUIRE_STATIC(pystruct::getTypeOfItem<2>(PY_STRING("<L2c5si")).size == 1);
+
+    REQUIRE_STATIC(pystruct::getTypeOfItem<3>(PY_STRING("<L2c5si")).formatChar == 's');
+    REQUIRE_STATIC(pystruct::getTypeOfItem<3>(PY_STRING("<L2c5si")).size == 5);
+
+    REQUIRE_STATIC(pystruct::getTypeOfItem<4>(PY_STRING("<L2c5si")).formatChar == 'i');
 }
+
 
 TEST_CASE("getBinaryOffset with item count", "[cppystruct::format]")
 {

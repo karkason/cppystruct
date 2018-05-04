@@ -47,18 +47,6 @@ SET_FORMAT_MODE('@', true, false, true);
 SET_FORMAT_MODE('>', false, true, false);
 SET_FORMAT_MODE('!', false, true, false);
 
-constexpr bool doesFormatAlign(size_t size)
-{
-    return size > 1;
-}
-
-struct FormatType
-{
-    size_t size;
-    char formatChar;
-};
-
-
 // Specifying the Big Endian format
 template <char FormatChar>
 struct BigEndianFormat
@@ -123,13 +111,40 @@ constexpr auto getFormatMode(Fmt)
     }
 }
 
-template <typename Fmt, typename BigEndianFmt>
+struct RawFormatType
+{
+	char formatChar;
+	size_t repeat;
+
+	constexpr bool isString() {
+		return formatChar == 's';
+	}
+};
+
+struct FormatType
+{
+	char formatChar;
+	size_t formatSize;
+	size_t size;
+
+	constexpr bool isString() {
+		return formatChar == 's';
+	}
+};
+
+constexpr bool doesFormatAlign(FormatType format)
+{
+	return format.formatSize > 1;
+}
+
+
+template <typename Fmt, char FormatChar, size_t Repeat=1>
 constexpr size_t getSize()
 {
     if constexpr (getFormatMode(Fmt{}).isNative()) {
-        return BigEndianFmt::nativeSize();
+        return BigEndianFormat<FormatChar>::nativeSize() * Repeat;
     } else {
-        return BigEndianFmt::size();
+        return BigEndianFormat<FormatChar>::size() * Repeat;
     }
 }
 
@@ -165,50 +180,74 @@ constexpr size_t countItems(Fmt)
     return itemCount;
 }
 
-template <size_t Item, typename Fmt, size_t CurrentItem=0, size_t CurrentI=0, size_t Multiplier=1, size_t... Is>
-constexpr FormatType getTypeOfItem(std::index_sequence<Is...>)
+template <size_t Item, size_t ArrSize>
+constexpr RawFormatType getUnwrappedItem(RawFormatType (&wrappedFormats) [ArrSize])
 {
-    if constexpr (CurrentI >= Fmt::size()) {
-        return FormatType{ 0, 0 };
-    } else if constexpr (CurrentI == 0 && isFormatMode(Fmt::at(0))) {
-        // If the first char is a format-mode, skip it
-        return getTypeOfItem<Item, Fmt, CurrentItem, CurrentI+1>(std::index_sequence<Is...>{});
-    } else if constexpr (internal::isDigit(Fmt::at(CurrentI))) {
-        // If the current char is a digit, consume the number, skip it and pass it as a multiplier
-        constexpr char chars[] = { Fmt::at(Is)... };
-        constexpr auto numberAndIndex = internal::consumeNumber(chars, CurrentI);
-        return getTypeOfItem<Item, Fmt, CurrentItem, numberAndIndex.second, numberAndIndex.first>(std::index_sequence<Is...>{});
-    } else {
-        // If the current char is a format char, parse it
-        constexpr char currentChar = Fmt::at(CurrentI);
-        if constexpr (((currentChar != 's') && (Item >= CurrentItem) && (Item < (CurrentItem + Multiplier)))
-            || ((currentChar == 's') && (Item == CurrentItem))) {
-            if constexpr (currentChar != 's') {
-                return FormatType{ getSize<Fmt, BigEndianFormat<currentChar>>(), currentChar };
-            } else {
-                return FormatType{ Multiplier, currentChar };
-            }
-        } else {
-            if constexpr(currentChar != 's') {
-                return getTypeOfItem<Item, Fmt, CurrentItem + Multiplier, CurrentI + 1>(std::index_sequence<Is...>{});
-            } else {
-                return getTypeOfItem<Item, Fmt, CurrentItem + 1, CurrentI + 1>(std::index_sequence<Is...>{});
-            }
+	size_t currentItem = 0;
+	for (size_t i = 0; i < ArrSize; i++) {
+		for (size_t repeat = 0; repeat < wrappedFormats[i].repeat; repeat++) {
+			auto currentType = wrappedFormats[i];
+			if (currentItem == Item) {
+				if (!currentType.isString()) {
+					currentType.repeat = 1;
+				}
+				return currentType;
+			}
+
+			currentItem++;
+			if (currentType.isString()) {
+				break;
+			}
+		}
+	}
+
+	return {0, 0};
+}
+
+template <size_t Item, typename Fmt, size_t... Is>
+constexpr RawFormatType getTypeOfItem(std::index_sequence<Is...>)
+{
+    constexpr char fomratString[] = { Fmt::at(Is)... };
+	RawFormatType types[countItems(Fmt{})] = {0};
+
+    size_t currentType = 0;
+    for(size_t i = 0; i < sizeof...(Is); i++) {
+        if(isFormatMode(fomratString[i])) {
+            continue;
         }
+
+        auto repeatCount = internal::consumeNumber(fomratString, i);
+        i = repeatCount.second;
+
+        types[currentType].formatChar = fomratString[i];
+        types[currentType].repeat = repeatCount.first;
+        if(repeatCount.first == 0) {
+            types[currentType].repeat = 1;
+        }
+
+		currentType++;
     }
+
+    return getUnwrappedItem<Item>(types);
 }
 
 template <size_t Item, typename Fmt>
-constexpr auto getTypeOfItem(Fmt)
+constexpr FormatType getTypeOfItem(Fmt)
 {
-    return getTypeOfItem<Item, Fmt>(std::make_index_sequence<Fmt::size()>());
+	static_assert(Item < countItems(Fmt{}), "Item request must be inside the format");
+    constexpr RawFormatType format = getTypeOfItem<Item, Fmt>(std::make_index_sequence<Fmt::size()>());
+
+	constexpr FormatType sizedFormat = { format.formatChar,
+										 getSize<Fmt, format.formatChar>(),
+										 getSize<Fmt, format.formatChar, format.repeat>()};
+
+	return sizedFormat;
 }
 
 template <typename Fmt, size_t... Items>
 constexpr size_t getBinaryOffset(Fmt, std::index_sequence<Items...>)
 {
     constexpr FormatType itemTypes[] = { getTypeOfItem<Items>(Fmt{})... };
-    constexpr size_t formatSizes[] = { getSize<Fmt, BigEndianFormat<itemTypes[Items].formatChar>>()... };
 
     constexpr auto formatMode = pystruct::getFormatMode(Fmt{});
 
@@ -217,10 +256,10 @@ constexpr size_t getBinaryOffset(Fmt, std::index_sequence<Items...>)
         size += itemTypes[i].size;
 
         if (formatMode.shouldPad()) {
-            if (doesFormatAlign(formatSizes[i+1])) {
-                auto currentAlignment = (size % formatSizes[i + 1]);
+            if (doesFormatAlign(itemTypes[i+1])) {
+                auto currentAlignment = (size % itemTypes[i + 1].formatSize);
                 if (currentAlignment != 0) {
-                    size += formatSizes[i + 1] - currentAlignment;
+                    size += itemTypes[i + 1].formatSize - currentAlignment;
                 }
             }
         }

@@ -40,6 +40,7 @@ constexpr auto internal::unpack(std::index_sequence<Items...>, Input&& packedInp
     constexpr auto formatMode = pystruct::getFormatMode(Fmt{});
 
     constexpr FormatType formats[] = { pystruct::getTypeOfItem<Items>(Fmt{})... };
+
     using Types = std::tuple<typename pystruct::RepresentedType<
         decltype(formatMode),
         formats[Items].formatChar
